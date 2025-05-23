@@ -49,7 +49,7 @@ const Footer: React.FC = () => {
             color: '#FFFFFF',
           }}
         >
-          © {currentYear} XNL FULL STACK TASK 02
+          © {currentYear} Windsurf  -  Log Analyzer
         </Typography>
        
         
