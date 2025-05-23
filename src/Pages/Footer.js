@@ -7,7 +7,7 @@ import useMediaQuery from '@mui/material/useMediaQuery';
 import { useTheme } from '@mui/material/styles';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 
-const Footer: React.FC = () => {
+const Footer= () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const currentYear = new Date().getFullYear();
