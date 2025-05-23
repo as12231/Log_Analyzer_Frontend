@@ -1,4 +1,3 @@
-// src/components/Login.jsx
 import React, { useState } from "react";
 import {
   Box,
@@ -13,7 +12,7 @@ import { useNavigate } from "react-router-dom";
 
 // Generate CAPTCHA function
 const generateCaptcha = () => {
-  const chars = "";
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
   let captcha = "";
   for (let i = 0; i < 6; i++) {
     captcha += chars.charAt(Math.floor(Math.random() * chars.length));
@@ -28,13 +27,15 @@ const Login = () => {
   const [userCaptcha, setUserCaptcha] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
+
   const handleLogin = async () => {
     if (userCaptcha !== captcha) {
       setError("❌ Invalid CAPTCHA. Please try again.");
       setCaptcha(generateCaptcha());
+      setUserCaptcha("");
       return;
     }
-  
+
     try {
       const response = await fetch("http://localhost:5000/auth/login", {
         method: "POST",
@@ -46,127 +47,243 @@ const Login = () => {
           password,
         }),
       });
-  
+
       const data = await response.json();
-  
+
       if (data.success) {
         setError("");
-        console.log("✅ Login successful", data);
-  
-        // Save token in localStorage
-        localStorage.setItem("token", data.token); // Save token in localStorage
-        localStorage.setItem("user", JSON.stringify(data.user)); // Optionally store user info as well
-  
-        navigate("/dashboard/workouts"); // Navigate to the dashboard
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("user", JSON.stringify(data.user));
+        navigate("/dashboard/workouts");
       } else {
         setError(data.message || "❌ Login failed.");
         setCaptcha(generateCaptcha());
+        setUserCaptcha("");
       }
     } catch (error) {
       console.error("Login error:", error);
       setError("❌ Something went wrong. Please try again.");
       setCaptcha(generateCaptcha());
+      setUserCaptcha("");
     }
   };
-  
+
+  // Define green color palette variables
+  const greenDark = "#1f4037";
+  const greenLight = "#99f2c8";
+  const greenMedium = "#4caf50";
+  const greenHover = "#388e3c";
+  const inputBorderColor = "#4caf5080";
 
   return (
     <Grid
       container
       sx={{
         minHeight: "100vh",
-        backgroundImage: "url(https://source.unsplash.com/featured/?gym,fitness)",
-        backgroundSize: "cover",
-        backgroundPosition: "center",
+        background: `linear-gradient(135deg, ${greenDark}, ${greenLight})`,
+        fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
       }}
     >
-      <Grid item xs={12} md={6}></Grid>
+      {/* Left panel */}
+      <Grid
+        item
+        xs={12}
+        md={6}
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center",
+          px: 4,
+          py: 6,
+          color: greenLight,
+          background: "rgba(0, 0, 0, 0.3)",
+          textShadow: `0 0 10px ${greenDark}`,
+        }}
+      >
+        <Typography variant="h3" fontWeight="bold" mb={2} textAlign="center">
+          Welcome Back!
+        </Typography>
+        <Typography
+          variant="body1"
+          sx={{ maxWidth: 400, textAlign: "center", opacity: 0.85 }}
+        >
+          Log in to your account and start analyzing your logs with powerful
+          filters and real-time insights.
+        </Typography>
+      </Grid>
 
-      <Grid item xs={12} md={6}>
-        <Box display="flex" justifyContent="center" alignItems="center" height="100%">
-          <Paper
-            elevation={10}
+      {/* Right panel */}
+      <Grid
+        item
+        xs={12}
+        md={6}
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          px: 4,
+          py: 6,
+          backgroundColor: "rgba(255, 255, 255, 0.95)",
+        }}
+      >
+        <Paper
+          elevation={12}
+          sx={{
+            p: 5,
+            width: "100%",
+            maxWidth: 420,
+            borderRadius: 3,
+            boxShadow:
+              `0 6px 20px ${greenMedium}aa, 0 8px 30px ${greenDark}bb`,
+            border: `1px solid ${greenMedium}`,
+          }}
+        >
+          <Typography
+            variant="h5"
+            fontWeight={600}
+            mb={4}
+            align="center"
+            color={greenDark}
+          >
+            User Login
+          </Typography>
+
+          <TextField
+            label="Email"
+            variant="outlined"
+            fullWidth
+            margin="normal"
+            value={name}
+            onChange={(e) => setEmail(e.target.value)}
+            autoComplete="email"
             sx={{
-              p: 4,
-              width: "80%",
-              maxWidth: 400,
-              borderRadius: 4,
-              backdropFilter: "blur(10px)",
-              backgroundColor: "rgba(255, 255, 255, 0.85)",
+              "& .MuiOutlinedInput-root": {
+                "& fieldset": {
+                  borderColor: inputBorderColor,
+                },
+                "&:hover fieldset": {
+                  borderColor: greenMedium,
+                },
+                "&.Mui-focused fieldset": {
+                  borderColor: greenMedium,
+                  boxShadow: `0 0 8px ${greenMedium}aa`,
+                },
+              },
+            }}
+          />
+
+          <TextField
+            label="Password"
+            variant="outlined"
+            type="password"
+            fullWidth
+            margin="normal"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            autoComplete="current-password"
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                "& fieldset": {
+                  borderColor: inputBorderColor,
+                },
+                "&:hover fieldset": {
+                  borderColor: greenMedium,
+                },
+                "&.Mui-focused fieldset": {
+                  borderColor: greenMedium,
+                  boxShadow: `0 0 8px ${greenMedium}aa`,
+                },
+              },
+            }}
+          />
+
+          <Box
+            sx={{
+              my: 3,
+              py: 1.5,
+              textAlign: "center",
+              fontSize: 26,
+              fontWeight: 700,
+              backgroundColor: greenLight,
+              borderRadius: 2,
+              userSelect: "none",
+              color: greenDark,
+              border: `2px solid ${greenMedium}`,
+              fontFamily: "'Courier New', Courier, monospace",
+              letterSpacing: 8,
+              cursor: "default",
+              boxShadow: `0 0 8px ${greenMedium}55`,
             }}
           >
-            <Typography variant="h5" fontWeight={600} mb={3} align="center">
-              User Login
+            {captcha}
+          </Box>
+
+          <TextField
+            label="Enter CAPTCHA"
+            variant="outlined"
+            fullWidth
+            value={userCaptcha}
+            onChange={(e) => setUserCaptcha(e.target.value)}
+            inputProps={{ style: { letterSpacing: "0.2em" } }}
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                "& fieldset": {
+                  borderColor: inputBorderColor,
+                },
+                "&:hover fieldset": {
+                  borderColor: greenMedium,
+                },
+                "&.Mui-focused fieldset": {
+                  borderColor: greenMedium,
+                  boxShadow: `0 0 8px ${greenMedium}aa`,
+                },
+              },
+            }}
+          />
+
+          {error && (
+            <Typography color="error" variant="body2" mt={1} textAlign="center">
+              {error}
             </Typography>
+          )}
 
-            <TextField
-              label="Email"
-              variant="outlined"
-              fullWidth
-              margin="normal"
-              value={name}
-              onChange={(e) => setEmail(e.target.value)}
-            />
+          <Button
+            variant="contained"
+            fullWidth
+            sx={{
+              mt: 4,
+              py: 1.8,
+              borderRadius: 3,
+              background: `linear-gradient(45deg, ${greenDark}, ${greenMedium})`,
+              fontWeight: "bold",
+              boxShadow: `0 4px 15px ${greenMedium}88`,
+              transition: "background 0.3s ease",
+              "&:hover": {
+                background: `linear-gradient(45deg, ${greenMedium}, ${greenHover})`,
+                boxShadow: `0 6px 20px ${greenHover}cc`,
+              },
+            }}
+            onClick={handleLogin}
+          >
+            Login
+          </Button>
 
-            <TextField
-              label="Password"
-              variant="outlined"
-              type="password"
-              fullWidth
-              margin="normal"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-
-            <Box
-              sx={{
-                my: 2,
-                p: 2,
-                textAlign: "center",
-                fontSize: 24,
-                letterSpacing: 4,
-                fontWeight: 700,
-                backgroundColor: "#f1f5f9",
-                borderRadius: 2,
-                userSelect: "none",
-              }}
-            >
-              {captcha}
-            </Box>
-
-            <TextField
-              label="Enter CAPTCHA"
-              variant="outlined"
-              fullWidth
-              value={userCaptcha}
-              onChange={(e) => setUserCaptcha(e.target.value)}
-            />
-
-            {error && (
-              <Typography color="error" variant="body2" mt={1}>
-                {error}
-              </Typography>
-            )}
-
-            <Button
-              variant="contained"
-              fullWidth
-              sx={{ mt: 3, py: 1.5, borderRadius: 3 }}
-              onClick={handleLogin}
-            >
-              Login
-            </Button>
-
-            <Box mt={2} display="flex" justifyContent="space-between">
-              <Link href="#" variant="body2">
-                Forgot Password?
-              </Link>
-              <Link href="/signup" variant="body2">
-                Signup
-              </Link>
-            </Box>
-          </Paper>
-        </Box>
+          <Box
+            mt={3}
+            display="flex"
+            justifyContent="space-between"
+            fontSize="0.9rem"
+            color={greenMedium}
+          >
+            <Link href="#" underline="hover" sx={{ color: greenMedium }}>
+              Forgot Password?
+            </Link>
+            <Link href="/signup" underline="hover" sx={{ color: greenMedium }}>
+              Signup
+            </Link>
+          </Box>
+        </Paper>
       </Grid>
     </Grid>
   );

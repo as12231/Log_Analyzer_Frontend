@@ -30,20 +30,26 @@ const Signup = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [message, setMessage] = useState("");
 
+  // New color scheme
+  const colors = {
+    bgGradientStart: "#0f4c5c",
+    bgGradientEnd: "#38b2ac",
+    paperBg: "rgba(255, 255, 255, 0.12)",
+    text: "#e0f2f1",
+    border: "#4fd1c5",
+    buttonBg: "#38b2ac",
+    buttonHover: "#2c7a7b",
+    error: "#f56565",
+  };
+
   const validateForm = () => {
     const newErrors = {};
-    if (!formData.name.trim())
-      newErrors.name = "Username is required";
-    if (!formData.email.match(/^\S+@\S+\.\S+$/))
-      newErrors.email = "Invalid email address";
-    if (!formData.phone.match(/^\d{10}$/))
-      newErrors.phone = "Phone must be 10 digits";
-    if (!formData.age || formData.age < 12 || formData.age > 100)
-      newErrors.age = "Age must be between 12 and 100";
-    if (formData.password.length < 6)
-      newErrors.password = "Password must be at least 6 characters";
-    if (formData.password !== formData.confirmPassword)
-      newErrors.confirmPassword = "Passwords do not match";
+    if (!formData.name.trim()) newErrors.name = "Username is required";
+    if (!formData.email.match(/^\S+@\S+\.\S+$/)) newErrors.email = "Invalid email address";
+    if (!formData.phone.match(/^\d{10}$/)) newErrors.phone = "Phone must be 10 digits";
+    if (!formData.age || formData.age < 12 || formData.age > 100) newErrors.age = "Age must be between 12 and 100";
+    if (formData.password.length < 6) newErrors.password = "Password must be at least 6 characters";
+    if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = "Passwords do not match";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -96,8 +102,7 @@ const Signup = () => {
     <Box
       sx={{
         minHeight: "100vh",
-        background: "url(https://source.unsplash.com/1600x900/?fitness,gym)",
-        backgroundSize: "cover",
+        background: `linear-gradient(to bottom right, ${colors.bgGradientStart}, ${colors.bgGradientEnd})`,
         py: 10,
       }}
     >
@@ -111,93 +116,79 @@ const Signup = () => {
                 width: "80%",
                 maxWidth: 400,
                 borderRadius: 4,
-                backdropFilter: "blur(10px)",
+                backdropFilter: "blur(12px)",
+                backgroundColor: colors.paperBg,
+                border: `1.5px solid ${colors.border}`,
+                color: colors.text,
+                boxShadow: `0 8px 24px ${colors.border}66`,
               }}
             >
-              <Typography variant="h5" fontWeight={600} mb={3} align="center">
+              <Typography
+                variant="h5"
+                fontWeight={600}
+                mb={3}
+                align="center"
+                sx={{ color: colors.text }}
+              >
                 Sign Up
               </Typography>
 
               {message && (
-                <Alert severity={message.includes("✅") ? "success" : "error"} sx={{ mb: 2 }}>
+                <Alert
+                  severity={message.includes("✅") ? "success" : "error"}
+                  sx={{ mb: 2, color: message.includes("✅") ? "green" : colors.error }}
+                >
                   {message}
                 </Alert>
               )}
 
               <form onSubmit={handleSubmit}>
-                <TextField
-                  fullWidth
-                  label="Username"
-                  name="name"
-                  margin="normal"
-                  value={formData.name}
-                  onChange={handleChange}
-                  error={!!errors.name}
-                  helperText={errors.name}
-                  InputProps={{
-                    endAdornment:
-                      showEmoji.name && (
-                        <InputAdornment position="end">
-                          <span role="img" aria-label="emoji">😊</span>
-                        </InputAdornment>
-                      ),
-                  }}
-                />
-                <TextField
-                  fullWidth
-                  label="Email"
-                  name="email"
-                  margin="normal"
-                  value={formData.email}
-                  onChange={handleChange}
-                  error={!!errors.email}
-                  helperText={errors.email}
-                  InputProps={{
-                    endAdornment:
-                      showEmoji.email && (
-                        <InputAdornment position="end">
-                          <span role="img" aria-label="emoji">📧</span>
-                        </InputAdornment>
-                      ),
-                  }}
-                />
-                <TextField
-                  fullWidth
-                  label="Phone Number"
-                  name="phone"
-                  margin="normal"
-                  value={formData.phone}
-                  onChange={handleChange}
-                  error={!!errors.phone}
-                  helperText={errors.phone}
-                  InputProps={{
-                    endAdornment:
-                      showEmoji.phone && (
-                        <InputAdornment position="end">
-                          <span role="img" aria-label="emoji">📱</span>
-                        </InputAdornment>
-                      ),
-                  }}
-                />
-                <TextField
-                  fullWidth
-                  label="Age"
-                  name="age"
-                  type="number"
-                  margin="normal"
-                  value={formData.age}
-                  onChange={handleChange}
-                  error={!!errors.age}
-                  helperText={errors.age}
-                  InputProps={{
-                    endAdornment:
-                      showEmoji.age && (
-                        <InputAdornment position="end">
-                          <span role="img" aria-label="emoji">🎂</span>
-                        </InputAdornment>
-                      ),
-                  }}
-                />
+                {["name", "email", "phone", "age"].map((field) => (
+                  <TextField
+                    key={field}
+                    fullWidth
+                    label={
+                      field === "name"
+                        ? "Username"
+                        : field === "phone"
+                        ? "Phone Number"
+                        : field.charAt(0).toUpperCase() + field.slice(1)
+                    }
+                    name={field}
+                    type={field === "age" ? "number" : "text"}
+                    margin="normal"
+                    value={formData[field]}
+                    onChange={handleChange}
+                    error={!!errors[field]}
+                    helperText={errors[field]}
+                    InputProps={{
+                      endAdornment:
+                        showEmoji[field] && (
+                          <InputAdornment position="end">
+                            {{
+                              name: <span role="img" aria-label="emoji">😊</span>,
+                              email: <span role="img" aria-label="emoji">📧</span>,
+                              phone: <span role="img" aria-label="emoji">📱</span>,
+                              age: <span role="img" aria-label="emoji">🎂</span>,
+                            }[field]}
+                          </InputAdornment>
+                        ),
+                    }}
+                    sx={{
+                      input: { color: colors.text },
+                      label: { color: colors.text },
+                      "& .MuiOutlinedInput-root": {
+                        "& fieldset": { borderColor: colors.border },
+                        "&:hover fieldset": { borderColor: colors.text },
+                        "&.Mui-focused fieldset": { borderColor: colors.text },
+                      },
+                      "& .MuiFormHelperText-root": {
+                        color: colors.error,
+                      },
+                    }}
+                  />
+                ))}
+
                 <TextField
                   fullWidth
                   type={showPassword ? "text" : "password"}
@@ -211,19 +202,31 @@ const Signup = () => {
                   InputProps={{
                     endAdornment: (
                       <InputAdornment position="end">
-                        {showEmoji.password && (
-                          <span role="img" aria-label="emoji">🔒</span>
-                        )}
+                        {showEmoji.password && <span role="img" aria-label="emoji">🔒</span>}
                         <IconButton
                           onClick={() => setShowPassword(!showPassword)}
                           edge="end"
+                          sx={{ color: colors.text }}
                         >
                           {showPassword ? <VisibilityOff /> : <Visibility />}
                         </IconButton>
                       </InputAdornment>
                     ),
                   }}
+                  sx={{
+                    input: { color: colors.text },
+                    label: { color: colors.text },
+                    "& .MuiOutlinedInput-root": {
+                      "& fieldset": { borderColor: colors.border },
+                      "&:hover fieldset": { borderColor: colors.text },
+                      "&.Mui-focused fieldset": { borderColor: colors.text },
+                    },
+                    "& .MuiFormHelperText-root": {
+                      color: colors.error,
+                    },
+                  }}
                 />
+
                 <TextField
                   fullWidth
                   type={showConfirmPassword ? "text" : "password"}
@@ -238,23 +241,41 @@ const Signup = () => {
                     endAdornment: (
                       <InputAdornment position="end">
                         <IconButton
-                          onClick={() =>
-                            setShowConfirmPassword(!showConfirmPassword)
-                          }
+                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                           edge="end"
+                          sx={{ color: colors.text }}
                         >
                           {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
                         </IconButton>
                       </InputAdornment>
                     ),
                   }}
+                  sx={{
+                    input: { color: colors.text },
+                    label: { color: colors.text },
+                    "& .MuiOutlinedInput-root": {
+                      "& fieldset": { borderColor: colors.border },
+                      "&:hover fieldset": { borderColor: colors.text },
+                      "&.Mui-focused fieldset": { borderColor: colors.text },
+                    },
+                    "& .MuiFormHelperText-root": {
+                      color: colors.error,
+                    },
+                  }}
                 />
+
                 <Button
                   type="submit"
                   fullWidth
                   variant="contained"
-                  color="primary"
-                  sx={{ mt: 3, borderRadius: 3 }}
+                  sx={{
+                    mt: 3,
+                    borderRadius: 3,
+                    backgroundColor: colors.buttonBg,
+                    "&:hover": { backgroundColor: colors.buttonHover },
+                    fontWeight: 600,
+                    color: "#fff",
+                  }}
                 >
                   Create Account
                 </Button>
@@ -263,10 +284,10 @@ const Signup = () => {
           </Grid>
 
           <Grid item xs={12} md={6}>
-            <Typography variant="h3" color="white" fontWeight={700}>
+            <Typography variant="h3" sx={{ color: "#e0f2f1", fontWeight: 700 }}>
               🏋️‍♀️ Join the Fitness Revolution
             </Typography>
-            <Typography variant="h6" color="white" mt={2}>
+            <Typography variant="h6" sx={{ color: "#e0f2f1", mt: 2 }}>
               Real-time tracking, AI fitness plans, social challenges, and more.
               Sign up now and take charge of your health journey.
             </Typography>
