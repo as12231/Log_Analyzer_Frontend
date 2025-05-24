@@ -12,9 +12,9 @@ import { useNavigate } from "react-router-dom";
 
 // Generate CAPTCHA function
 const generateCaptcha = () => {
-  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  const chars = "1";
   let captcha = "";
-  for (let i = 0; i < 6; i++) {
+  for (let i = 0; i < 1; i++) {
     captcha += chars.charAt(Math.floor(Math.random() * chars.length));
   }
   return captcha;
