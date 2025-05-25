@@ -12,7 +12,7 @@ import AuthGuard from './AuthGuard';
 const AppRouters = () => {
   return (
     <Routes>
-      <Route path="/dashboard" element={<LandingPage />} />
+      <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />

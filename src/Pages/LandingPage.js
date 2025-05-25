@@ -20,10 +20,12 @@ const LandingPage = () => {
     message: "",
     severity: "info",
   });
+  const [insights, setInsights] = useState(null);  // NEW: state for insights
 
   const handleFileChange = (e) => {
     if (e.target.files.length > 0) {
       setFileName(e.target.files[0].name);
+      setInsights(null); // reset previous insights on new file select
     }
   };
 
@@ -42,12 +44,17 @@ const LandingPage = () => {
 
       const data = await response.json();
 
+      if (data.success && data.structuredInsights) {
+        setInsights(data.structuredInsights);  // NEW: save insights from response
+      } else {
+        setInsights(null);
+      }
+
       setSnackbar({
         open: true,
         message: data.message || "No message from server",
         severity: data.success ? "success" : "error",
       });
-
     } catch (error) {
       console.error("❌ Error uploading file:", error);
       setSnackbar({
@@ -55,11 +62,72 @@ const LandingPage = () => {
         message: "Network or server error",
         severity: "error",
       });
+      setInsights(null);
     }
   };
 
   const handleSnackbarClose = () => {
     setSnackbar({ ...snackbar, open: false });
+  };
+
+  // NEW: Insights display component
+  const InsightsDisplay = ({ insights }) => {
+    if (!insights) return null;
+
+    return (
+      <Paper
+        elevation={6}
+        sx={{ p: 3, mt: 4, backgroundColor: "rgba(255, 255, 255, 0.1)" }}
+      >
+        <Typography variant="h5" gutterBottom>
+          🔍 Insights from Log File
+        </Typography>
+
+        <Typography variant="subtitle1" sx={{ mt: 2, fontWeight: "bold" }}>
+          Frequent Error Types:
+        </Typography>
+        <ul>
+          {insights.frequentErrorTypes?.map((err, idx) => (
+            <li key={idx}>{err}</li>
+          ))}
+        </ul>
+
+        <Typography variant="subtitle1" sx={{ mt: 2, fontWeight: "bold" }}>
+          Most Active Time Range:
+        </Typography>
+        <Typography>{insights.mostActiveTimeRange}</Typography>
+
+        <Typography variant="subtitle1" sx={{ mt: 2, fontWeight: "bold" }}>
+          Log Level Distribution:
+        </Typography>
+        <ul>
+          {insights.logLevelDistribution &&
+            Object.entries(insights.logLevelDistribution).map(([level, count]) => (
+              <li key={level}>
+                {level}: {count}
+              </li>
+            ))}
+        </ul>
+
+        <Typography variant="subtitle1" sx={{ mt: 2, fontWeight: "bold" }}>
+          Common Messages:
+        </Typography>
+        <ul>
+          {insights.commonMessages?.map((msg, idx) => (
+            <li key={idx}>{msg}</li>
+          ))}
+        </ul>
+
+        <Typography variant="subtitle1" sx={{ mt: 2, fontWeight: "bold" }}>
+          Recommendations:
+        </Typography>
+        <ul>
+          {insights.recommendations?.map((rec, idx) => (
+            <li key={idx}>{rec}</li>
+          ))}
+        </ul>
+      </Paper>
+    );
   };
 
   return (
@@ -130,7 +198,10 @@ const LandingPage = () => {
           </Button>
         )}
 
-        <Typography variant="h5" sx={{ mb: 3 }}>
+        {/* NEW: Show insights here */}
+        <InsightsDisplay insights={insights} />
+
+        <Typography variant="h5" sx={{ mb: 3, mt: 6 }}>
           Features:
         </Typography>
         <Grid container spacing={2}>
