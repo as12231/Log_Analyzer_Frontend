@@ -7,21 +7,59 @@ import {
   Paper,
   Button,
   Input,
-  List,
-  ListItem,
-  ListItemText,
   Divider,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import UploadFileIcon from "@mui/icons-material/UploadFile";
 
 const LandingPage = () => {
   const [fileName, setFileName] = useState(null);
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "info",
+  });
 
   const handleFileChange = (e) => {
     if (e.target.files.length > 0) {
       setFileName(e.target.files[0].name);
-      // You can add file processing logic here
     }
+  };
+
+  const handleProcessFile = async () => {
+    const input = document.getElementById("fileInput");
+    if (!input.files.length) return;
+
+    const formData = new FormData();
+    formData.append("logfile", input.files[0]);
+
+    try {
+      const response = await fetch("http://localhost:5000/auth/upload_log", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      setSnackbar({
+        open: true,
+        message: data.message || "No message from server",
+        severity: data.success ? "success" : "error",
+      });
+
+    } catch (error) {
+      console.error("❌ Error uploading file:", error);
+      setSnackbar({
+        open: true,
+        message: "Network or server error",
+        severity: "error",
+      });
+    }
+  };
+
+  const handleSnackbarClose = () => {
+    setSnackbar({ ...snackbar, open: false });
   };
 
   return (
@@ -58,7 +96,7 @@ const LandingPage = () => {
             p: 4,
             backgroundColor: "rgba(255, 255, 255, 0.1)",
             borderRadius: 3,
-            mb: 6,
+            mb: 2,
             textAlign: "center",
             cursor: "pointer",
           }}
@@ -66,7 +104,7 @@ const LandingPage = () => {
         >
           <UploadFileIcon sx={{ fontSize: 50, mb: 2 }} />
           <Typography variant="h6" gutterBottom>
-            Click or drag & drop to upload your .log file
+            Click to upload your .log file
           </Typography>
           <Input
             id="fileInput"
@@ -80,14 +118,17 @@ const LandingPage = () => {
               Selected File: {fileName}
             </Typography>
           )}
+        </Paper>
+
+        {fileName && (
           <Button
             variant="contained"
-            sx={{ mt: 3 }}
-            onClick={() => alert("Upload & process file here!")}
+            sx={{ display: "block", mx: "auto", mb: 4 }}
+            onClick={handleProcessFile}
           >
             Process File
           </Button>
-        </Paper>
+        )}
 
         <Typography variant="h5" sx={{ mb: 3 }}>
           Features:
@@ -126,6 +167,21 @@ const LandingPage = () => {
           © 2025 Log Analytics Inc.
         </Typography>
       </Container>
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={4000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert
+          onClose={handleSnackbarClose}
+          severity={snackbar.severity}
+          sx={{ width: "100%" }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };

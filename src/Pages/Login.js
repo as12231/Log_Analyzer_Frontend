@@ -54,7 +54,7 @@ const Login = () => {
         setError("");
         localStorage.setItem("token", data.token);
         localStorage.setItem("user", JSON.stringify(data.user));
-        navigate("/dashboard/workouts");
+        navigate("/");
       } else {
         setError(data.message || "❌ Login failed.");
         setCaptcha(generateCaptcha());

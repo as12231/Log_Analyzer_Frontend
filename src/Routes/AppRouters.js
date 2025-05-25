@@ -9,10 +9,10 @@ import Logout from '../Pages/Logout';
 import AuthGuard from './AuthGuard';
 // import ErrorPage from '../Components/Pages/ErrorPage'; // If you have a 404 error page
 
-const AppRouters: React.FC = () => {
+const AppRouters = () => {
   return (
     <Routes>
-      <Route path="/" element={<LandingPage />} />
+      <Route path="/dashboard" element={<LandingPage />} />
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
