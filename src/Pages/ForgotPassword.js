@@ -7,6 +7,7 @@ const ForgotPassword = () => {
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [open, setOpen] = useState(false);
+  const apiUrl = process.env.REACT_APP_API_URL;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
