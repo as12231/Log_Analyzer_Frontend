@@ -13,12 +13,12 @@ import LogDashboard from '../Pages/LogDashboard';
 const AppRouters = () => {
   return (
     <Routes>
-      <Route path="/" element={<LandingPage />} />
+      <Route path="/dashboard" element={<LandingPage />} />
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
-      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/forgot_password" element={<ForgotPassword />} />
       <Route path="/logout" element={<Logout />} />
-      <Route path="/xn" element={<LogAnalysisDashboard />} />
+      <Route path="/" element={<LogAnalysisDashboard />} />
       <Route path="/history_insights" element={<LogDashboard />} />
     </Routes>
   );

@@ -87,9 +87,9 @@ export default function LandingPage() {
           </Typography>
           <Grid container spacing={4} justifyContent="center">
             {[
-              { title: "Application Logs", desc: "Supports structured and unstructured logs from any app framework.", color: blue[300] },
-              { title: "System Logs", desc: "Track OS-level logs, errors, and system performance metrics.", color: '#66bb6a' },
-              { title: "Cloud Logs", desc: "Integrate logs from AWS CloudWatch, GCP, Azure, and more.", color: '#ffeb3b' },
+              { title: "Application Logs", desc: "Easily collect and view logs from your applications, including errors and user actions.", color: blue[300] },
+              { title: "System Logs", desc: "Monitor operating system activity, track system errors, and check performance metrics.", color: '#66bb6a' },
+              { title: "DataBase Logs", desc: "Connect to AWS, GCP, Azure, and other platforms to monitor database events", color: '#ffeb3b' },
             ].map((item, idx) => (
               <Grid item xs={12} sm={6} md={4} key={idx}>
                 <Card sx={{ backgroundColor: grey[800], height: '100%' }}>
@@ -111,7 +111,7 @@ export default function LandingPage() {
           {stats.totalFiles}
         </Typography>
         <Typography sx={{ fontSize: '1.2rem' }} color={grey[400]}>
-          Total Files
+          Total Uploads
         </Typography>
       </Grid>
       <Grid item xs={6}>
@@ -119,7 +119,7 @@ export default function LandingPage() {
           {stats.totalRows}
         </Typography>
         <Typography sx={{ fontSize: '1.2rem' }} color={grey[400]}>
-          Total Rows
+          Total Data Points
         </Typography>
       </Grid>
     </Grid>
@@ -151,10 +151,7 @@ export default function LandingPage() {
         </Container>
       </Box>
 
-      {/* Footer */}
-      <Box sx={{ backgroundColor: grey[900], py: 3, textAlign: 'center', color: grey[500] }}>
-        © 2025 Log Analytics. Built with 💻 by your team.
-      </Box>
+
     </Box>
   );
 }

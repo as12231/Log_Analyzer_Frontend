@@ -39,15 +39,7 @@ ChartJS.register(
 const Dashboard = () => {
   const [data, setData] = useState(null);
   const [activeChart, setActiveChart] = useState('All');
-  const canvasRefs = useRef({
-    'severity-bar': null,
-    'logtype-pie': null,
-    'issue-bar': null,
-    'issue-doughnut': null,
-    'severity-radar': null,
-    'issue-logtype-bar': null,
-  });
-  const chartInstances = useRef({});
+  const chartRefs = useRef({});
 
   useEffect(() => {
     fetch('http://localhost:5000/auth/hist_insights')
@@ -56,35 +48,91 @@ const Dashboard = () => {
       .catch(err => console.error('API Error:', err));
 
     return () => {
-      // Destroy all charts on component unmount
-      Object.values(chartInstances.current).forEach(chart => {
+      // Destroy all charts on unmount
+      Object.values(chartRefs.current).forEach(chart => {
         if (chart) chart.destroy();
       });
-      chartInstances.current = {};
+      chartRefs.current = {};
     };
   }, []);
 
-  const initializeChart = (canvasId, ChartComponent, chartData, options) => {
-    const canvas = canvasRefs.current[canvasId];
-    if (!canvas) return;
+  useEffect(() => {
+    if (!data) return;
 
-    // Destroy existing chart if it exists
-    if (chartInstances.current[canvasId]) {
-      chartInstances.current[canvasId].destroy();
-    }
-
-    // Create new chart
-    chartInstances.current[canvasId] = new ChartJS(canvas, {
-      type: ChartComponent === Bar ? 'bar' : ChartComponent === Pie ? 'pie' : ChartComponent === Doughnut ? 'doughnut' : 'radar',
-      data: chartData,
-      options,
+    // Destroy all existing charts
+    Object.values(chartRefs.current).forEach(chart => {
+      if (chart) chart.destroy();
     });
-  };
+    chartRefs.current = {};
+
+    // Define charts to render based on activeChart
+    const chartsToRender = [
+      {
+        id: 'severity-bar',
+        Component: Bar,
+        data: severityDistribution,
+        options: barChartOptions,
+        visible: activeChart === 'All' || activeChart === 'Severity Distribution',
+      },
+      {
+        id: 'logtype-pie',
+        Component: Pie,
+        data: logTypeBreakdown,
+        options: chartOptions,
+        visible: activeChart === 'All' || activeChart === 'Log Type Breakdown',
+      },
+      {
+        id: 'issue-bar',
+        Component: Bar,
+        data: issueFrequencyBar,
+        options: barChartOptions,
+        visible: activeChart === 'All' || activeChart === 'Issue Frequency',
+      },
+      {
+        id: 'issue-doughnut',
+        Component: Doughnut,
+        data: issueFrequencyDoughnut,
+        options: chartOptions,
+        visible: activeChart === 'All' || activeChart === 'Issue Distribution',
+      },
+      {
+        id: 'severity-radar',
+        Component: Radar,
+        data: severityRadar,
+        options: radarChartOptions,
+        visible: activeChart === 'All' || activeChart === 'Severity Profile',
+      },
+      {
+        id: 'issue-logtype-bar',
+        Component: Bar,
+        data: stackedIssueLogType,
+        options: {
+          ...barChartOptions,
+          plugins: { ...barChartOptions.plugins, legend: { display: true, position: 'bottom', labels: { color: 'white' } } },
+        },
+        visible: activeChart === 'All' || activeChart === 'Issue vs Log Type',
+      },
+    ];
+
+    // Initialize visible charts
+    chartsToRender.forEach(({ id, Component, data, options, visible }) => {
+      if (visible) {
+        const canvas = document.getElementById(id);
+        if (canvas) {
+          chartRefs.current[id] = new ChartJS(canvas, {
+            type: Component === Bar ? 'bar' : Component === Pie ? 'pie' : Component === Doughnut ? 'doughnut' : 'radar',
+            data,
+            options,
+          });
+        }
+      }
+    });
+  }, [activeChart, data]);
 
   if (!data) {
     return (
       <Box sx={{ backgroundColor: '#0f172a', height: '100vh', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <Typography variant="h6">Loading Analytics...</Typography>
+        <Typography variant="h6">Loading Analytics Dashboard...</Typography>
       </Box>
     );
   }
@@ -109,17 +157,17 @@ const Dashboard = () => {
     plugins: {
       legend: { position: 'bottom', labels: { color: 'white', font: { size: 12 } } },
       tooltip: {
-        backgroundColor: 'rgba(0,0,0,0.8)',
+        backgroundColor: 'rgba(0,0,0,0 buildup:)',
         titleFont: { size: 14, weight: 'bold' },
         bodyFont: { size: 12 },
         padding: 12,
       },
       datalabels: {
         formatter: (value, context) => {
-          const total = context.chart._metasets?.[0]?.total || context.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+          const total = context.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
           return ((value / total) * 100).toFixed(1) + '%';
         },
-        color: '#fff',
+        color: 'white',
         font: { weight: 'bold', size: 12 },
       },
     },
@@ -178,10 +226,10 @@ const Dashboard = () => {
   };
 
   const severityDistribution = {
-    labels: Object.keys(data.levelCounts),
+    labels: Object.keys(data.levelCounts || {}),
     datasets: [{
       label: 'Log Severity',
-      data: Object.values(data.levelCounts),
+      data: Object.values(data.levelCounts || {}),
       backgroundColor: '#3b82f6',
       borderColor: '#2563eb',
       borderWidth: 1,
@@ -189,20 +237,20 @@ const Dashboard = () => {
   };
 
   const logTypeBreakdown = {
-    labels: Object.keys(data.logTypeCounts),
+    labels: Object.keys(data.logTypeCounts || {}),
     datasets: [{
       label: 'Log Types',
-      data: Object.values(data.logTypeCounts),
+      data: Object.values(data.logTypeCounts || {}),
       backgroundColor: ['#f97316', '#22c55e', '#3b82f6', '#eab308', '#ef4444', '#a855f7', '#ec4899'],
       hoverBackgroundColor: ['#fb923c', '#4ade80', '#60a5fa', '#facc15', '#f87171', '#c084fc', '#f472b6'],
     }],
   };
 
   const issueFrequencyBar = {
-    labels: Object.keys(data.keywordCounts),
+    labels: Object.keys(data.keywordCounts || {}),
     datasets: [{
       label: 'Issue Frequency',
-      data: Object.values(data.keywordCounts),
+      data: Object.values(data.keywordCounts || {}),
       backgroundColor: '#14b8a6',
       borderColor: '#0d9488',
       borderWidth: 1,
@@ -210,20 +258,20 @@ const Dashboard = () => {
   };
 
   const issueFrequencyDoughnut = {
-    labels: Object.keys(data.keywordCounts).filter(key => data.keywordCounts[key] > 0),
+    labels: Object.keys(data.keywordCounts || {}).filter(key => (data.keywordCounts[key] || 0) > 0),
     datasets: [{
       label: 'Issue Distribution',
-      data: Object.values(data.keywordCounts).filter(val => val > 0),
+      data: Object.values(data.keywordCounts || {}).filter(val => val > 0),
       backgroundColor: ['#f87171', '#facc15', '#4ade80', '#60a5fa', '#c084fc', '#f97316'],
       hoverBackgroundColor: ['#fca5a5', '#fde047', '#86efac', '#93c5fd', '#d8b4fe', '#fb923c'],
     }],
   };
 
   const severityRadar = {
-    labels: Object.keys(data.levelCounts),
+    labels: Object.keys(data.levelCounts || {}),
     datasets: [{
       label: 'Severity Profile',
-      data: Object.values(data.levelCounts),
+      data: Object.values(data.levelCounts || {}),
       backgroundColor: 'rgba(59, 130, 246, 0.2)',
       borderColor: '#3b82f6',
       pointBackgroundColor: '#3b82f6',
@@ -232,10 +280,10 @@ const Dashboard = () => {
   };
 
   const stackedIssueLogType = {
-    labels: Object.keys(data.keywordCounts).filter(key => data.keywordCounts[key] > 0),
-    datasets: Object.keys(data.logTypeCounts).map((type, index) => ({
+    labels: Object.keys(data.keywordCounts || {}).filter(key => (data.keywordCounts[key] || 0) > 0),
+    datasets: Object.keys(data.logTypeCounts || {}).map((type, index) => ({
       label: type,
-      data: Object.keys(data.keywordCounts).filter(key => data.keywordCounts[key] > 0).map(() => Math.round(Math.random() * data.logTypeCounts[type])),
+      data: Object.keys(data.keywordCounts || {}).filter(key => (data.keywordCounts[key] || 0) > 0).map(() => Math.round(Math.random() * (data.logTypeCounts[type] || 0))),
       backgroundColor: ['#f97316', '#22c55e', '#3b82f6', '#eab308', '#ef4444', '#a855f7', '#ec4899'][index % 7],
     })),
   };
@@ -261,9 +309,9 @@ const Dashboard = () => {
           'All',
           'Severity Distribution',
           'Log Type Breakdown',
-          'Issue Frequency Bar',
-          'Issue Distribution Doughnut',
-          'Severity Profile Radar',
+          'Issue Frequency',
+          'Issue Distribution',
+          'Severity Profile',
           'Issue vs Log Type'
         ].map(label => (
           <Button
@@ -273,7 +321,7 @@ const Dashboard = () => {
               cursor: 'pointer',
               backgroundColor: activeChart === label ? '#2563eb' : '#334155',
               color: 'white',
-              px: 3,
+              px: 4,
               py: 1,
               borderRadius: 8,
               fontWeight: 'bold',
@@ -301,8 +349,7 @@ const Dashboard = () => {
                 sx={{ color: 'white' }}
               />
               <CardContent sx={{ height: 360, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <canvas ref={el => canvasRefs.current['severity-bar'] = el} />
-                {canvasRefs.current['severity-bar'] && initializeChart('severity-bar', Bar, severityDistribution, barChartOptions)}
+                <canvas id="severity-bar" />
               </CardContent>
             </Card>
           </Grid>
@@ -317,56 +364,52 @@ const Dashboard = () => {
                 sx={{ color: 'white' }}
               />
               <CardContent sx={{ height: 360, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <canvas ref={el => canvasRefs.current['logtype-pie'] = el} />
-                {canvasRefs.current['logtype-pie'] && initializeChart('logtype-pie', Pie, logTypeBreakdown, chartOptions)}
+                <canvas id="logtype-pie" />
               </CardContent>
             </Card>
           </Grid>
         )}
 
-        {(activeChart === 'All' || activeChart === 'Issue Frequency Bar') && (
+        {(activeChart === 'All' || activeChart === 'Issue Frequency') && (
           <Grid item xs={12} md={6}>
             <Card sx={cardStyle}>
               <CardHeader
-                title="Issue Frequency Bar"
+                title="Issue Frequency"
                 titleTypographyProps={{ fontSize: '1.4rem', fontWeight: 'bold' }}
                 sx={{ color: 'white' }}
               />
               <CardContent sx={{ height: 360, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <canvas ref={el => canvasRefs.current['issue-bar'] = el} />
-                {canvasRefs.current['issue-bar'] && initializeChart('issue-bar', Bar, issueFrequencyBar, barChartOptions)}
+                <canvas id="issue-bar" />
               </CardContent>
             </Card>
           </Grid>
         )}
 
-        {(activeChart === 'All' || activeChart === 'Issue Distribution Doughnut') && (
+        {(activeChart === 'All' || activeChart === 'Issue Distribution') && (
           <Grid item xs={12} md={6}>
             <Card sx={cardStyle}>
               <CardHeader
-                title="Issue Distribution Doughnut"
+                title="Issue Distribution"
                 titleTypographyProps={{ fontSize: '1.4rem', fontWeight: 'bold' }}
                 sx={{ color: 'white' }}
               />
               <CardContent sx={{ height: 360, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <canvas ref={el => canvasRefs.current['issue-doughnut'] = el} />
-                {canvasRefs.current['issue-doughnut'] && initializeChart('issue-doughnut', Doughnut, issueFrequencyDoughnut, chartOptions)}
+                <canvas id="issue-doughnut" />
               </CardContent>
             </Card>
           </Grid>
         )}
 
-        {(activeChart === 'All' || activeChart === 'Severity Profile Radar') && (
+        {(activeChart === 'All' || activeChart === 'Severity Profile') && (
           <Grid item xs={12} md={6}>
             <Card sx={cardStyle}>
               <CardHeader
-                title="Severity Profile Radar"
+                title="Severity Profile"
                 titleTypographyProps={{ fontSize: '1.4rem', fontWeight: 'bold' }}
                 sx={{ color: 'white' }}
               />
               <CardContent sx={{ height: 360, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <canvas ref={el => canvasRefs.current['severity-radar'] = el} />
-                {canvasRefs.current['severity-radar'] && initializeChart('severity-radar', Radar, severityRadar, radarChartOptions)}
+                <canvas id="severity-radar" />
               </CardContent>
             </Card>
           </Grid>
@@ -381,8 +424,7 @@ const Dashboard = () => {
                 sx={{ color: 'white' }}
               />
               <CardContent sx={{ height: 360, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <canvas ref={el => canvasRefs.current['issue-logtype-bar'] = el} />
-                {canvasRefs.current['issue-logtype-bar'] && initializeChart('issue-logtype-bar', Bar, stackedIssueLogType, { ...barChartOptions, plugins: { ...barChartOptions.plugins, legend: { display: true, position: 'bottom', labels: { color: 'white' } } } })}
+                <canvas id="issue-logtype-bar" />
               </CardContent>
             </Card>
           </Grid>
