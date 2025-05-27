@@ -3,21 +3,18 @@ import {
   Box,
   Typography,
   Container,
-  Grid,
   Paper,
   Button,
   Input,
-  Divider,
   Snackbar,
   Alert,
   TextField,
-  List,
-  ListItem,
-  ListItemText,
+  CircularProgress,
 } from "@mui/material";
 import UploadFileIcon from "@mui/icons-material/UploadFile";
+import LogoutIcon from "@mui/icons-material/Logout";
+import RefreshIcon from "@mui/icons-material/Refresh";
 import { useNavigate } from "react-router-dom";
-
 
 const LandingPage = () => {
   const navigate = useNavigate();
@@ -28,13 +25,13 @@ const LandingPage = () => {
     message: "",
     severity: "info",
   });
+  const [showSummary, setShowSummary] = useState(false);
   const [insights, setInsights] = useState(null);
   const [showOptions, setShowOptions] = useState(false);
   const [showChat, setShowChat] = useState(false);
-
-  // New chat related states
   const [chatInput, setChatInput] = useState("");
   const [chatMessages, setChatMessages] = useState([]);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const handleFileChange = (e) => {
     if (e.target.files.length > 0) {
@@ -42,6 +39,7 @@ const LandingPage = () => {
       setInsights(null);
       setShowOptions(false);
       setShowChat(false);
+      setShowSummary(false);
       setChatMessages([]);
       setChatInput("");
     }
@@ -51,6 +49,7 @@ const LandingPage = () => {
     const input = document.getElementById("fileInput");
     if (!input.files.length) return;
 
+    setIsProcessing(true);
     const formData = new FormData();
     formData.append("logfile", input.files[0]);
 
@@ -61,21 +60,30 @@ const LandingPage = () => {
       });
 
       const data = await response.json();
+      console.log("API Response:", data);
 
-      if (data.success && data.structuredInsights) {
-        setInsights(data.structuredInsights);
+      if (data.success) {
+        // Strip markdown asterisks from summary
+        const cleanSummary = data.summary
+          ? data.summary.replace(/\*\*(.*?)\*\*/g, "$1").replace(/\*/g, "")
+          : "No summary provided";
+        setInsights({ summary: cleanSummary });
+        setSnackbar({
+          open: true,
+          message: data.message || "Log file uploaded successfully",
+          severity: "success",
+        });
+        setShowOptions(true);
+        setShowSummary(true); // Show Summary by default
       } else {
         setInsights(null);
+        setSnackbar({
+          open: true,
+          message: data.message || "Failed to process file",
+          severity: "error",
+        });
+        setShowOptions(false);
       }
-
-      setSnackbar({
-        open: true,
-        message: data.message || "No message from server",
-        severity: data.success ? "success" : "error",
-      });
-
-      setShowOptions(true);
-      setShowChat(false);
     } catch (error) {
       console.error("❌ Error uploading file:", error);
       setSnackbar({
@@ -86,7 +94,25 @@ const LandingPage = () => {
       setInsights(null);
       setShowOptions(false);
       setShowChat(false);
+      setShowSummary(false);
+    } finally {
+      setIsProcessing(false);
     }
+  };
+
+  const handleReset = () => {
+    setFileName(null);
+    setInsights(null);
+    setShowOptions(false);
+    setShowChat(false);
+    setShowSummary(false);
+    setChatMessages([]);
+    setChatInput("");
+    document.getElementById("fileInput").value = null;
+  };
+
+  const handleLogout = () => {
+    navigate("/login");
   };
 
   const handleSnackbarClose = () => {
@@ -125,6 +151,7 @@ const LandingPage = () => {
     }
     setChatInput("");
   };
+
   const handleChatKeyDown = (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
@@ -132,281 +159,324 @@ const LandingPage = () => {
     }
   };
 
-  const InsightsDisplay = ({ insights }) => {
-    if (!insights) return null;
-
-    return (
-      <Paper
-        elevation={6}
-        sx={{ p: 3, mt: 4, backgroundColor: "rgba(255, 255, 255, 0.1)" }}
-      >
-        <Typography variant="h5" gutterBottom>
-          🔍 Insights from Log File
-        </Typography>
-
-        <Typography variant="subtitle1" sx={{ mt: 2, fontWeight: "bold" }}>
-          Frequent Error Types:
-        </Typography>
-        <ul>
-          {insights.frequentErrorTypes?.map((err, idx) => (
-            <li key={idx}>{err}</li>
-          ))}
-        </ul>
-
-        <Typography variant="subtitle1" sx={{ mt: 2, fontWeight: "bold" }}>
-          Most Active Time Range:
-        </Typography>
-        <Typography>{insights.mostActiveTimeRange}</Typography>
-
-        <Typography variant="subtitle1" sx={{ mt: 2, fontWeight: "bold" }}>
-          Log Level Distribution:
-        </Typography>
-        <ul>
-          {insights.logLevelDistribution &&
-            Object.entries(insights.logLevelDistribution).map(([level, count]) => (
-              <li key={level}>
-                {level}: {count}
-              </li>
-            ))}
-        </ul>
-
-        <Typography variant="subtitle1" sx={{ mt: 2, fontWeight: "bold" }}>
-          Common Messages:
-        </Typography>
-        <ul>
-          {insights.commonMessages?.map((msg, idx) => (
-            <li key={idx}>{msg}</li>
-          ))}
-        </ul>
-
-        <Typography variant="subtitle1" sx={{ mt: 2, fontWeight: "bold" }}>
-          Recommendations:
-        </Typography>
-        <ul>
-          {insights.recommendations?.map((rec, idx) => (
-            <li key={idx}>{rec}</li>
-          ))}
-        </ul>
-      </Paper>
-    );
-  };
-
   return (
     <>
-    <Box
-      sx={{
-        display: "flex",
-        minHeight: "100vh",
-        background: "linear-gradient(135deg, #0f2027, #203a43, #2c5364)",
-        color: "white",
-        py: 8,
-      }}
-    >
-      <Container maxWidth="md" sx={{ flexGrow: 1, pr: showChat ? 2 : 0 }}>
-        <Typography
-          variant="h3"
-          align="center"
-          gutterBottom
-          sx={{ fontWeight: "bold" }}
-        >
-          📊 Log Analytics Platform
-        </Typography>
-
-        <Typography
-          variant="h6"
-          align="center"
-          sx={{ mb: 5, color: "rgba(255,255,255,0.7)" }}
-        >
-          Upload your server or application log files and gain deep insights
-          through powerful filtering and visualization tools.
-        </Typography>
-
-        <Paper
-          elevation={8}
+      <Box
+        sx={{
+          display: "flex",
+          minHeight: "100vh",
+          background: "linear-gradient(135deg, #0f2027, #203a43, #2c5364)",
+          color: "white",
+          py: 8,
+          position: "relative",
+        }}
+      >
+        <Button
+          variant="outlined"
+          startIcon={<LogoutIcon />}
+          onClick={handleLogout}
           sx={{
-            p: 4,
-            backgroundColor: "rgba(255, 255, 255, 0.1)",
-            borderRadius: 3,
-            mb: 2,
-            textAlign: "center",
-            cursor: "pointer",
+            position: "absolute",
+            top: 16,
+            right: 16,
+            color: "white",
+            borderColor: "rgba(255,255,255,0.5)",
+            borderRadius: 8,
+            textTransform: "none",
+            fontWeight: "bold",
+            "&:hover": {
+              borderColor: "white",
+              backgroundColor: "rgba(255,255,255,0.2)",
+              transform: "scale(1.05)",
+              transition: "all 0.3s ease",
+            },
           }}
-          onClick={() => document.getElementById("fileInput").click()}
         >
-          <UploadFileIcon sx={{ fontSize: 50, mb: 2 }} />
-          <Typography variant="h6" gutterBottom>
-            Click to upload your .log file
-          </Typography>
-          <Input
-            id="fileInput"
-            type="file"
-            inputProps={{ accept: ".log,.txt" }}
-            onChange={handleFileChange}
-            sx={{ display: "none" }}
-          />
-          {fileName && (
-            <Typography sx={{ mt: 2, fontStyle: "italic" }}>
-              Selected File: {fileName}
-            </Typography>
-          )}
-        </Paper>
+          Logout
+        </Button>
 
-        {!showOptions && fileName && (
-          <Button
-            variant="contained"
-            sx={{ display: "block", mx: "auto", mb: 4 }}
-            onClick={handleProcessFile}
-          >
-            Process File
-          </Button>
-        )}
-
-        {showOptions && (
-          <Box sx={{ my: 3, textAlign: "center" }}>
-            <Button variant="outlined" onClick={() => setShowChat(true)} sx={{ mr: 2 }}>
-              Chat
-            </Button>
-
-            {/* Navigate to "Summary" */}
-            <Button variant="outlined" onClick={() => navigate("/y")} sx={{ mr: 2 }}>
-              Summary
-            </Button>
-
-            {/* Navigate to "Insights" - next tab */}
-            <Button variant="outlined" onClick={() => navigate("/x")} sx={{ mr: 2 }}>
-              Insights
-            </Button>
-
-            {/* Navigate to "History Insights" */}
-            <Button variant="outlined" onClick={() => navigate("/history")} sx={{ mr: 2 }}>
-              History Insights
-            </Button>
-          </Box>
-        )}
-
-        {insights && !showChat && <InsightsDisplay insights={insights} />}
-
-        {showChat && (
-          <Paper
-            elevation={6}
+        <Container maxWidth="md" sx={{ flexGrow: 1, zIndex: 1 }}>
+          <Typography
+            variant="h3"
+            align="center"
+            gutterBottom
             sx={{
-              mt: 4,
-              p: 3,
-              backgroundColor: "rgba(255, 255, 255, 0.1)",
-              maxHeight: "60vh",
-              overflowY: "auto",
+              fontWeight: "bold",
+              textShadow: "2px 2px 4px rgba(0,0,0,0.3)",
+              letterSpacing: 1,
             }}
           >
-            <Typography variant="h5" gutterBottom>
-              🤖 Chat with Insights Bot
+            📊 Log Analytics Platform
+          </Typography>
+          <Typography
+            variant="h6"
+            align="center"
+            sx={{
+              mb: 5,
+              color: "rgba(255,255,255,0.8)",
+              maxWidth: "600px",
+              mx: "auto",
+              lineHeight: 1.6,
+            }}
+          >
+            Upload your server or application log files to uncover deep insights with our advanced analytics and visualization tools.
+          </Typography>
+
+          <Paper
+            elevation={8}
+            sx={{
+              p: 4,
+              backgroundColor: "rgba(255, 255, 255, 0.15)",
+              borderRadius: 3,
+              mb: 2,
+              textAlign: "center",
+              cursor: "pointer",
+              transition: "transform 0.3s ease, box-shadow 0.3s ease",
+              "&:hover": {
+                transform: "translateY(-5px)",
+                boxShadow: "0 8px 24px rgba(0,0,0,0.3)",
+              },
+            }}
+            onClick={() => document.getElementById("fileInput").click()}
+          >
+            <UploadFileIcon sx={{ fontSize: 50, mb: 2, color: "#90caf9" }} />
+            <Typography variant="h6" gutterBottom sx={{ fontWeight: "medium" }}>
+              Upload your .log or .txt file
             </Typography>
-            <Box
-              sx={{
-                maxHeight: "40vh",
-                overflowY: "auto",
-                mb: 2,
-                border: "1px solid rgba(255,255,255,0.3)",
-                borderRadius: 2,
-                p: 2,
-                backgroundColor: "rgba(0,0,0,0.3)",
-              }}
-            >
-              {chatMessages.length === 0 && (
-                <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.6)" }}>
-                  Start by asking questions about your log file.
-                </Typography>
-              )}
-              {chatMessages.map((msg, idx) => (
-                <Typography
-                  key={idx}
-                  variant="body1"
-                  sx={{
-                    mb: 1,
-                    color: msg.from === "user" ? "#a5d6a7" : "#90caf9",
-                    fontWeight: msg.from === "user" ? "bold" : "normal",
-                  }}
-                >
-                  <strong>{msg.from === "user" ? "You:" : "Bot:"}</strong> {msg.text}
-                </Typography>
-              ))}
-            </Box>
-
-            <TextField
-              fullWidth
-              multiline
-              maxRows={4}
-              value={chatInput}
-              onChange={(e) => setChatInput(e.target.value)}
-              onKeyDown={handleChatKeyDown}
-              placeholder="Ask something..."
-              variant="filled"
-              sx={{ bgcolor: "rgba(255,255,255,0.15)", borderRadius: 1 }}
+            <Input
+              id="fileInput"
+              type="file"
+              inputProps={{ accept: ".log,.txt" }}
+              onChange={handleFileChange}
+              sx={{ display: "none" }}
             />
-
-            <Button
-              variant="contained"
-              onClick={handleSendMessage}
-              sx={{ mt: 1, float: "right" }}
-            >
-              Send
-            </Button>
+            {fileName && (
+              <Typography sx={{ mt: 2, fontStyle: "italic", color: "rgba(255,255,255,0.8)" }}>
+                Selected File: {fileName}
+              </Typography>
+            )}
           </Paper>
-        )}
-        <Typography variant="h5" sx={{ mb: 3, mt: 6 }}>
-          Features:
-        </Typography>
-        <Grid container spacing={2}>
-          {[
-            "Filter by Log Level (Error, Warn, Info)",
-            "Timestamp range filtering",
-            "Search and keyword highlighting",
-            "Save parsed data for later analysis",
-            "Visual metrics and charts",
-          ].map((feature, idx) => (
-            <Grid item xs={12} sm={6} key={idx}>
-              <Paper
-                elevation={3}
+
+          {fileName && (
+            <Box sx={{ display: "flex", justifyContent: "center", gap: 2, mb: 4 }}>
+              <Button
+                variant="contained"
+                onClick={handleProcessFile}
+                disabled={isProcessing}
                 sx={{
-                  p: 2,
-                  backgroundColor: "rgba(255, 255, 255, 0.15)",
-                  borderRadius: 2,
+                  borderRadius: 8,
+                  textTransform: "none",
+                  fontWeight: "bold",
+                  backgroundColor: "#1976d2",
+                  "&:hover": {
+                    backgroundColor: "#1565c0",
+                    transform: "scale(1.05)",
+                    transition: "all 0.3s ease",
+                  },
+                  "&:disabled": {
+                    backgroundColor: "rgba(255,255,255,0.3)",
+                  },
                 }}
               >
-                <Typography>{feature}</Typography>
-              </Paper>
-            </Grid>
-          ))}
-        </Grid>
+                {isProcessing ? (
+                  <>
+                    <CircularProgress size={24} sx={{ mr: 1, color: "white" }} />
+                    Processing...
+                  </>
+                ) : (
+                  "Process File"
+                )}
+              </Button>
+              <Button
+                variant="outlined"
+                startIcon={<RefreshIcon />}
+                onClick={handleReset}
+                sx={{
+                  borderRadius: 8,
+                  textTransform: "none",
+                  color: "white",
+                  borderColor: "rgba(255,255,255,0.5)",
+                  "&:hover": {
+                    borderColor: "white",
+                    backgroundColor: "rgba(255,255,255,0.2)",
+                    transform: "scale(1.05)",
+                    transition: "all 0.3s ease",
+                  },
+                }}
+              >
+                Reset
+              </Button>
+            </Box>
+          )}
 
-        <Divider sx={{ my: 6, borderColor: "rgba(255,255,255,0.3)" }} />
+          {showOptions && (
+            <Box sx={{ my: 3, display: "flex", justifyContent: "center", gap: 2 }}>
+              {[ "Summary","Chat", "Insights", "History Insights"].map((label) => (
+                <Button
+                  key={label}
+                  variant={showSummary && label === "Summary" ? "contained" : showChat && label === "Chat" ? "contained" : "outlined"}
+                  onClick={() => {
+                    if (label === "Chat") {
+                      setShowChat(true);
+                      setShowSummary(false); // Hide Summary when Chat is clicked
+                    } else if (label === "Summary") {
+                      setShowSummary(true);
+                      setShowChat(false); // Hide Chat when Summary is clicked
+                    } else if (label === "Insights") {
+                      navigate("/x");
+                    } else {
+                      navigate("/history");
+                    }
+                  }}
+                  sx={{
+                    borderRadius: 8,
+                    textTransform: "none",
+                    fontWeight: "bold",
+                    color: "white",
+                    borderColor: "rgba(255,255,255,0.5)",
+                    backgroundColor:
+                      (showSummary && label === "Summary") || (showChat && label === "Chat")
+                        ? "#1976d2"
+                        : "transparent",
+                    "&:hover": {
+                      borderColor: "white",
+                      backgroundColor: "rgba(255,255,255,0.2)",
+                      transform: "scale(1.05)",
+                      transition: "all 0.3s ease",
+                    },
+                    px: 3,
+                    py: 1,
+                  }}
+                >
+                  {label}
+                </Button>
+              ))}
+            </Box>
+          )}
 
-        <Typography
-          variant="body2"
-          align="center"
-          color="rgba(255,255,255,0.5)"
-          sx={{ fontStyle: "italic" }}
-        >
-          © 2025 Log Analytics Inc.
-        </Typography>
-      
-        
+          {showSummary && !showChat && (
+            <Paper
+              elevation={6}
+              sx={{
+                p: 3,
+                mt: 2,
+                backgroundColor: "rgba(255, 255, 255, 0.15)",
+                borderRadius: 2,
+                backdropFilter: "blur(5px)",
+              }}
+            >
+              <Typography variant="h6" gutterBottom sx={{ fontWeight: "bold" }}>
+                📝 Summary
+              </Typography>
+              <Typography sx={{ whiteSpace: "pre-wrap", color: "rgba(255,255,255,0.9)" }}>
+                {insights?.summary || "No summary available."}
+              </Typography>
+            </Paper>
+          )}
 
-        <Snackbar
-          open={snackbar.open}
-          autoHideDuration={6000}
+          {showChat && (
+            <Paper
+              elevation={6}
+              sx={{
+                mt: 4,
+                p: 3,
+                backgroundColor: "rgba(255, 255, 255, 0.15)",
+                borderRadius: 2,
+                maxHeight: "60vh",
+                overflowY: "auto",
+                backdropFilter: "blur(5px)",
+              }}
+            >
+              <Typography variant="h5" gutterBottom sx={{ fontWeight: "bold" }}>
+                🤖 Chat with Insights Bot
+              </Typography>
+              <Box
+                sx={{
+                  maxHeight: "40vh",
+                  overflowY: "auto",
+                  mb: 2,
+                  border: "1px solid rgba(255,255,255,0.3)",
+                  borderRadius: 2,
+                  p: 2,
+                  backgroundColor: "rgba(0,0,0,0.3)",
+                }}
+              >
+                {chatMessages.length === 0 && (
+                  <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.6)" }}>
+                    Start by asking questions about your log file.
+                  </Typography>
+                )}
+                {chatMessages.map((msg, idx) => (
+                  <Typography
+                    key={idx}
+                    variant="body1"
+                    sx={{
+                      mb: 1,
+                      color: msg.from === "user" ? "#a5d6a7" : "#90caf9",
+                      fontWeight: msg.from === "user" ? "bold" : "normal",
+                    }}
+                  >
+                    <strong>{msg.from === "user" ? "You:" : "Bot:"}</strong> {msg.text}
+                  </Typography>
+                ))}
+              </Box>
+
+              <TextField
+                fullWidth
+                multiline
+                maxRows={4}
+                value={chatInput}
+                onChange={(e) => setChatInput(e.target.value)}
+                onKeyDown={handleChatKeyDown}
+                placeholder="Ask something like 'What are the most common errors?'"
+                sx={{
+                  input: { color: "white" },
+                  textarea: { color: "white" },
+                  "& .MuiOutlinedInput-root": {
+                    "& fieldset": { borderColor: "rgba(255,255,255,0.5)" },
+                    "&:hover fieldset": { borderColor: "white" },
+                    "&.Mui-focused fieldset": { borderColor: "#90caf9" },
+                  },
+                  borderRadius: 2,
+                  backgroundColor: "rgba(255,255,255,0.05)",
+                }}
+              />
+              <Button
+                variant="contained"
+                sx={{
+                  mt: 2,
+                  borderRadius: 8,
+                  textTransform: "none",
+                  fontWeight: "bold",
+                  backgroundColor: "#1976d2",
+                  "&:hover": {
+                    backgroundColor: "#1565c0",
+                    transform: "scale(1.05)",
+                    transition: "all 0.3s ease",
+                  },
+                }}
+                onClick={handleSendMessage}
+              >
+                Send
+              </Button>
+            </Paper>
+          )}
+        </Container>
+      </Box>
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={handleSnackbarClose}
+      >
+        <Alert
           onClose={handleSnackbarClose}
-          anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+          severity={snackbar.severity}
+          sx={{ width: "100%", borderRadius: 2 }}
         >
-          <Alert
-            onClose={handleSnackbarClose}
-            severity={snackbar.severity}
-            sx={{ width: "100%" }}
-          >
-            {snackbar.message}
-          </Alert>
-        </Snackbar>
-      </Container>
-    </Box>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </>
   );
 };
