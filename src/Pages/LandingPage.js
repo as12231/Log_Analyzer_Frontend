@@ -10,22 +10,40 @@ import {
   Divider,
   Snackbar,
   Alert,
+  TextField,
+  List,
+  ListItem,
+  ListItemText,
 } from "@mui/material";
 import UploadFileIcon from "@mui/icons-material/UploadFile";
+import { useNavigate } from "react-router-dom";
+
 
 const LandingPage = () => {
+  const navigate = useNavigate();
+
   const [fileName, setFileName] = useState(null);
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
     severity: "info",
   });
-  const [insights, setInsights] = useState(null);  // NEW: state for insights
+  const [insights, setInsights] = useState(null);
+  const [showOptions, setShowOptions] = useState(false);
+  const [showChat, setShowChat] = useState(false);
+
+  // New chat related states
+  const [chatInput, setChatInput] = useState("");
+  const [chatMessages, setChatMessages] = useState([]);
 
   const handleFileChange = (e) => {
     if (e.target.files.length > 0) {
       setFileName(e.target.files[0].name);
-      setInsights(null); // reset previous insights on new file select
+      setInsights(null);
+      setShowOptions(false);
+      setShowChat(false);
+      setChatMessages([]);
+      setChatInput("");
     }
   };
 
@@ -45,7 +63,7 @@ const LandingPage = () => {
       const data = await response.json();
 
       if (data.success && data.structuredInsights) {
-        setInsights(data.structuredInsights);  // NEW: save insights from response
+        setInsights(data.structuredInsights);
       } else {
         setInsights(null);
       }
@@ -55,6 +73,9 @@ const LandingPage = () => {
         message: data.message || "No message from server",
         severity: data.success ? "success" : "error",
       });
+
+      setShowOptions(true);
+      setShowChat(false);
     } catch (error) {
       console.error("❌ Error uploading file:", error);
       setSnackbar({
@@ -63,6 +84,8 @@ const LandingPage = () => {
         severity: "error",
       });
       setInsights(null);
+      setShowOptions(false);
+      setShowChat(false);
     }
   };
 
@@ -70,7 +93,45 @@ const LandingPage = () => {
     setSnackbar({ ...snackbar, open: false });
   };
 
-  // NEW: Insights display component
+  const handleSendMessage = async () => {
+    if (!chatInput.trim()) return;
+    setChatMessages((prev) => [...prev, { from: "user", text: chatInput }]);
+
+    try {
+      const response = await fetch("http://localhost:5000/auth/ask", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ question: chatInput }),
+      });
+
+      const data = await response.json();
+
+      if (data.success && data.answer) {
+        setChatMessages((prev) => [...prev, { from: "bot", text: data.answer }]);
+      } else {
+        setChatMessages((prev) => [
+          ...prev,
+          { from: "bot", text: "Sorry, I couldn't get a valid answer." },
+        ]);
+      }
+    } catch (error) {
+      console.error("Error sending message:", error);
+      setChatMessages((prev) => [
+        ...prev,
+        { from: "bot", text: "Network or server error while sending message." },
+      ]);
+    }
+    setChatInput("");
+  };
+  const handleChatKeyDown = (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
+    }
+  };
+
   const InsightsDisplay = ({ insights }) => {
     if (!insights) return null;
 
@@ -131,15 +192,17 @@ const LandingPage = () => {
   };
 
   return (
+    <>
     <Box
       sx={{
+        display: "flex",
         minHeight: "100vh",
         background: "linear-gradient(135deg, #0f2027, #203a43, #2c5364)",
-        py: 8,
         color: "white",
+        py: 8,
       }}
     >
-      <Container maxWidth="md">
+      <Container maxWidth="md" sx={{ flexGrow: 1, pr: showChat ? 2 : 0 }}>
         <Typography
           variant="h3"
           align="center"
@@ -188,7 +251,7 @@ const LandingPage = () => {
           )}
         </Paper>
 
-        {fileName && (
+        {!showOptions && fileName && (
           <Button
             variant="contained"
             sx={{ display: "block", mx: "auto", mb: 4 }}
@@ -198,9 +261,97 @@ const LandingPage = () => {
           </Button>
         )}
 
-        {/* NEW: Show insights here */}
-        <InsightsDisplay insights={insights} />
+        {showOptions && (
+          <Box sx={{ my: 3, textAlign: "center" }}>
+            <Button variant="outlined" onClick={() => setShowChat(true)} sx={{ mr: 2 }}>
+              Chat
+            </Button>
 
+            {/* Navigate to "Summary" */}
+            <Button variant="outlined" onClick={() => navigate("/y")} sx={{ mr: 2 }}>
+              Summary
+            </Button>
+
+            {/* Navigate to "Insights" - next tab */}
+            <Button variant="outlined" onClick={() => navigate("/x")} sx={{ mr: 2 }}>
+              Insights
+            </Button>
+
+            {/* Navigate to "History Insights" */}
+            <Button variant="outlined" onClick={() => navigate("/history")} sx={{ mr: 2 }}>
+              History Insights
+            </Button>
+          </Box>
+        )}
+
+        {insights && !showChat && <InsightsDisplay insights={insights} />}
+
+        {showChat && (
+          <Paper
+            elevation={6}
+            sx={{
+              mt: 4,
+              p: 3,
+              backgroundColor: "rgba(255, 255, 255, 0.1)",
+              maxHeight: "60vh",
+              overflowY: "auto",
+            }}
+          >
+            <Typography variant="h5" gutterBottom>
+              🤖 Chat with Insights Bot
+            </Typography>
+            <Box
+              sx={{
+                maxHeight: "40vh",
+                overflowY: "auto",
+                mb: 2,
+                border: "1px solid rgba(255,255,255,0.3)",
+                borderRadius: 2,
+                p: 2,
+                backgroundColor: "rgba(0,0,0,0.3)",
+              }}
+            >
+              {chatMessages.length === 0 && (
+                <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.6)" }}>
+                  Start by asking questions about your log file.
+                </Typography>
+              )}
+              {chatMessages.map((msg, idx) => (
+                <Typography
+                  key={idx}
+                  variant="body1"
+                  sx={{
+                    mb: 1,
+                    color: msg.from === "user" ? "#a5d6a7" : "#90caf9",
+                    fontWeight: msg.from === "user" ? "bold" : "normal",
+                  }}
+                >
+                  <strong>{msg.from === "user" ? "You:" : "Bot:"}</strong> {msg.text}
+                </Typography>
+              ))}
+            </Box>
+
+            <TextField
+              fullWidth
+              multiline
+              maxRows={4}
+              value={chatInput}
+              onChange={(e) => setChatInput(e.target.value)}
+              onKeyDown={handleChatKeyDown}
+              placeholder="Ask something..."
+              variant="filled"
+              sx={{ bgcolor: "rgba(255,255,255,0.15)", borderRadius: 1 }}
+            />
+
+            <Button
+              variant="contained"
+              onClick={handleSendMessage}
+              sx={{ mt: 1, float: "right" }}
+            >
+              Send
+            </Button>
+          </Paper>
+        )}
         <Typography variant="h5" sx={{ mb: 3, mt: 6 }}>
           Features:
         </Typography>
@@ -237,23 +388,26 @@ const LandingPage = () => {
         >
           © 2025 Log Analytics Inc.
         </Typography>
-      </Container>
+      
+        
 
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={4000}
-        onClose={handleSnackbarClose}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-      >
-        <Alert
+        <Snackbar
+          open={snackbar.open}
+          autoHideDuration={6000}
           onClose={handleSnackbarClose}
-          severity={snackbar.severity}
-          sx={{ width: "100%" }}
+          anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
         >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
+          <Alert
+            onClose={handleSnackbarClose}
+            severity={snackbar.severity}
+            sx={{ width: "100%" }}
+          >
+            {snackbar.message}
+          </Alert>
+        </Snackbar>
+      </Container>
     </Box>
+    </>
   );
 };
 

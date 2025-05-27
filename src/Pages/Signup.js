@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import {
   Box,
@@ -32,15 +33,12 @@ const Signup = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [message, setMessage] = useState("");
 
-  // Simplified colors
   const colors = {
-    bg: "#e8f0fe", // light ash-blue
-    paperBg: "#ffffff",
-    text: "#1a202c",
-    border: "#90a4ae", // ash
-    buttonBg: "#2196f3", // blue
-    buttonHover: "#1976d2",
-    error: "#f44336",
+    bg: "#f5f5f5",
+    primary: "#1976d2",
+    paper: "#fff",
+    border: "#e0e0e0",
+    text: "#333",
   };
 
   const validateForm = () => {
@@ -79,7 +77,7 @@ const Signup = () => {
         const data = await res.json();
         if (data.success) {
           setMessage("✅ Signup successful!");
-          setTimeout(() => navigate("/login"), 1500); // navigate after 1.5 seconds
+          setTimeout(() => navigate("/login"), 1500);
         } else {
           setMessage(`❌ ${data.message || "Signup failed"}`);
         }
@@ -91,149 +89,145 @@ const Signup = () => {
   };
 
   return (
-    <Box sx={{ minHeight: "100vh", background: colors.bg, py: 10 }}>
-      <Container maxWidth="lg">
-        <Grid container spacing={4} alignItems="center">
-          <Grid item xs={12} md={6}>
-            <Paper
-              elevation={4}
-              sx={{
-                p: 4,
-                width: "80%",
-                maxWidth: 400,
-                borderRadius: 3,
-                backgroundColor: colors.paperBg,
-                border: `1px solid ${colors.border}`,
-                color: colors.text,
+    <Box sx={{ minHeight: "100vh", backgroundColor: colors.bg, display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <Paper elevation={3} sx={{ width: "90%", maxWidth: 1000, display: "flex", minHeight: 600, borderRadius: 3, overflow: "hidden" }}>
+        {/* Left panel - Signup Form */}
+        <Box sx={{ flex: 1, p: 5, backgroundColor: colors.paper }}>
+          <Typography variant="h4" fontWeight={600} gutterBottom>
+            Create Account
+          </Typography>
+
+
+          {message && (
+            <Alert severity={message.includes("✅") ? "success" : "error"} sx={{ my: 2 }}>
+              {message}
+            </Alert>
+          )}
+
+          <form onSubmit={handleSubmit}>
+            {["name", "email", "phone", "age"].map((field) => (
+              <TextField
+                key={field}
+                fullWidth
+                label={
+                  field === "name"
+                    ? "Username"
+                    : field === "phone"
+                    ? "Phone Number"
+                    : field.charAt(0).toUpperCase() + field.slice(1)
+                }
+                name={field}
+                type={field === "age" ? "number" : "text"}
+                margin="normal"
+                value={formData[field]}
+                onChange={handleChange}
+                error={!!errors[field]}
+                helperText={errors[field]}
+                InputProps={{
+                  endAdornment: showEmoji[field] && (
+                    <InputAdornment position="end">
+                      {{
+                        name: <span role="img">😊</span>,
+                        email: <span role="img">📧</span>,
+                        phone: <span role="img">📱</span>,
+                        age: <span role="img">🎂</span>,
+                      }[field]}
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            ))}
+
+            <TextField
+              fullWidth
+              type={showPassword ? "text" : "password"}
+              label="Password"
+              name="password"
+              margin="normal"
+              value={formData.password}
+              onChange={handleChange}
+              error={!!errors.password}
+              helperText={errors.password}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    {showEmoji.password && <span role="img">🔒</span>}
+                    <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
+                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
               }}
+            />
+
+            <TextField
+              fullWidth
+              type={showConfirmPassword ? "text" : "password"}
+              label="Confirm Password"
+              name="confirmPassword"
+              margin="normal"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              error={!!errors.confirmPassword}
+              helperText={errors.confirmPassword}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton onClick={() => setShowConfirmPassword(!showConfirmPassword)} edge="end">
+                      {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
+            />
+
+            <Button
+              type="submit"
+              fullWidth
+              variant="contained"
+              sx={{ mt: 3, backgroundColor: colors.primary, fontWeight: "bold" }}
             >
-              <Typography variant="h5" fontWeight={600} mb={3} align="center">
-                Sign Up
-              </Typography>
+              Sign Up
+            </Button>
+          </form>
+        </Box>
 
-              {message && (
-                <Alert
-                  severity={message.includes("✅") ? "success" : "error"}
-                  sx={{ mb: 2 }}
-                >
-                  {message}
-                </Alert>
-              )}
-
-              <form onSubmit={handleSubmit}>
-                {["name", "email", "phone", "age"].map((field) => (
-                  <TextField
-                    key={field}
-                    fullWidth
-                    label={
-                      field === "name"
-                        ? "Username"
-                        : field === "phone"
-                        ? "Phone Number"
-                        : field.charAt(0).toUpperCase() + field.slice(1)
-                    }
-                    name={field}
-                    type={field === "age" ? "number" : "text"}
-                    margin="normal"
-                    value={formData[field]}
-                    onChange={handleChange}
-                    error={!!errors[field]}
-                    helperText={errors[field]}
-                    InputProps={{
-                      endAdornment: showEmoji[field] && (
-                        <InputAdornment position="end">
-                          {{
-                            name: <span role="img">😊</span>,
-                            email: <span role="img">📧</span>,
-                            phone: <span role="img">📱</span>,
-                            age: <span role="img">🎂</span>,
-                          }[field]}
-                        </InputAdornment>
-                      ),
-                    }}
-                  />
-                ))}
-
-                <TextField
-                  fullWidth
-                  type={showPassword ? "text" : "password"}
-                  label="Password"
-                  name="password"
-                  margin="normal"
-                  value={formData.password}
-                  onChange={handleChange}
-                  error={!!errors.password}
-                  helperText={errors.password}
-                  InputProps={{
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        {showEmoji.password && <span role="img">🔒</span>}
-                        <IconButton
-                          onClick={() => setShowPassword(!showPassword)}
-                          edge="end"
-                        >
-                          {showPassword ? <VisibilityOff /> : <Visibility />}
-                        </IconButton>
-                      </InputAdornment>
-                    ),
-                  }}
-                />
-
-                <TextField
-                  fullWidth
-                  type={showConfirmPassword ? "text" : "password"}
-                  label="Confirm Password"
-                  name="confirmPassword"
-                  margin="normal"
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  error={!!errors.confirmPassword}
-                  helperText={errors.confirmPassword}
-                  InputProps={{
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <IconButton
-                          onClick={() =>
-                            setShowConfirmPassword(!showConfirmPassword)
-                          }
-                          edge="end"
-                        >
-                          {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
-                        </IconButton>
-                      </InputAdornment>
-                    ),
-                  }}
-                />
-
-                <Button
-                  type="submit"
-                  fullWidth
-                  variant="contained"
-                  sx={{
-                    mt: 3,
-                    borderRadius: 3,
-                    backgroundColor: colors.buttonBg,
-                    "&:hover": { backgroundColor: colors.buttonHover },
-                    fontWeight: 600,
-                    color: "#fff",
-                  }}
-                >
-                  Create Account
-                </Button>
-              </form>
-            </Paper>
-          </Grid>
-
-          <Grid item xs={12} md={6}>
-            <Typography variant="h3" sx={{ color: colors.text, fontWeight: 700 }}>
-              🏋️‍♂️ Ready to Transform?
-            </Typography>
-            <Typography variant="h6" sx={{ color: colors.text, mt: 2 }}>
-              Simple signup. Smarter fitness. Join now and start your journey!
-            </Typography>
-          </Grid>
-        </Grid>
-      </Container>
+        {/* Right panel - Message / Promo */}
+        <Box
+          sx={{
+            flex: 1,
+            backgroundColor: colors.primary,
+            color: "#fff",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            alignItems: "center",
+            p: 4,
+          }}
+        >
+          <Typography variant="h3" fontWeight={700}>
+            Welcome Back!
+          </Typography>
+          <Typography variant="h6" sx={{ mt: 2, maxWidth: 300, textAlign: "center" }}>
+            Already have an account? Log in and user Our Platform!
+          </Typography>
+          <Button
+            variant="outlined"
+            sx={{
+              mt: 4,
+              borderColor: "#fff",
+              color: "#fff",
+              fontWeight: 600,
+              "&:hover": {
+                backgroundColor: "#ffffff22",
+              },
+            }}
+            onClick={() => navigate("/login")}
+          >
+            Go to Login
+          </Button>
+        </Box>
+      </Paper>
     </Box>
   );
 };
