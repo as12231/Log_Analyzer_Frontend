@@ -26,7 +26,7 @@ export default function LandingPage() {
 
       return;
     }
-    fetch(`${apiUrl}/auth/all_insights`)
+    fetch(`${apiUrl}/auth/insights`)
       .then(res => res.json())
       .then(data => {
         if (data.success) {
