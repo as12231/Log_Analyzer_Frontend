@@ -12,7 +12,7 @@ const ForgotPassword = () => {
     e.preventDefault();
     try {
       // Simulated API request
-      const response = await fetch('https://api.example.com/forgot-password', {
+      const response = await fetch(`${apiUrl}/auth/forgot-password`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
