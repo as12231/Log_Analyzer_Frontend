@@ -10,7 +10,7 @@ import LogAnalysisDashboard from '../Pages/LogAnalysisDashboard';
 import LogDashboard from '../Pages/LogDashboard';
 import LogFileDashboard from '../Pages/LogFileDashboard';
 
-
+import AuthGuard from './AuthGuard'
 const AppRouters = () => {
   return (
     <Routes>

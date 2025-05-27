@@ -10,7 +10,6 @@ const RandomQuote = () => {
   ];
 
   const [quote, setQuote] = useState("");
-
   const getRandomQuote = () => {
     const randomIndex = Math.floor(Math.random() * quotes.length);
     setQuote(quotes[randomIndex]);

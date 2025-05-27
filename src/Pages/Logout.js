@@ -5,7 +5,6 @@ import { Box, Typography, CircularProgress } from '@mui/material';
 
 const Logout = () => {
 const navigate = useNavigate();
-
 useEffect(() => {
     localStorage.removeItem('authToken');
     sessionStorage.clear();

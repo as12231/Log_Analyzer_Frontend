@@ -22,6 +22,7 @@ import {
 } from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 import { Bar, Pie, Doughnut, Radar } from 'react-chartjs-2';
+import { useNavigate } from "react-router-dom";
 
 ChartJS.register(
   CategoryScale,
@@ -35,13 +36,21 @@ ChartJS.register(
   Legend,
   ChartDataLabels
 );
-
 const Dashboard = () => {
   const [data, setData] = useState(null);
   const [activeChart, setActiveChart] = useState('All');
   const chartRefs = useRef({});
+  const navigate = useNavigate();
+
   const apiUrl = process.env.REACT_APP_API_URL;
   useEffect(() => {
+    const token = localStorage.getItem("token"); 
+    if (!token) {
+      alert("Please login again. Session timed out.");
+      navigate("/login");
+
+      return;
+    }
     fetch(`${apiUrl}/auth/hist_insights`)      .then(res => res.json())
       .then(json => setData(json))
       .catch(err => console.error('API Error:', err));

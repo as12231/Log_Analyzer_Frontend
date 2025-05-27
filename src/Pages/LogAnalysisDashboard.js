@@ -19,6 +19,13 @@ export default function LandingPage() {
   const [stats, setStats] = useState({ totalFiles: 0, totalRows: 0 });
   const apiUrl = process.env.REACT_APP_API_URL;
   useEffect(() => {
+    const token = localStorage.getItem("token"); 
+    if (!token) {
+      alert("Please login again. Session timed out.");
+        navigate("/login");
+
+      return;
+    }
     fetch(`${apiUrl}/auth/all_insights`)
       .then(res => res.json())
       .then(data => {
