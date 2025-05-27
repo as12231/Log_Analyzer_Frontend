@@ -19,7 +19,7 @@ const AppRouters = () => {
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/logout" element={<Logout />} />
       <Route path="/xn" element={<LogAnalysisDashboard />} />
-      <Route path="/x" element={<LogDashboard />} />
+      <Route path="/history_insights" element={<LogDashboard />} />
     </Routes>
   );
 };

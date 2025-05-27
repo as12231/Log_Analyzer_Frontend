@@ -325,7 +325,7 @@ const LandingPage = () => {
                     } else if (label === "Insights") {
                       navigate("/x");
                     } else {
-                      navigate("/history");
+                      navigate("/history_insights");
                     }
                   }}
                   sx={{
