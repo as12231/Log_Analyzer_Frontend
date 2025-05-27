@@ -40,10 +40,9 @@ const Dashboard = () => {
   const [data, setData] = useState(null);
   const [activeChart, setActiveChart] = useState('All');
   const chartRefs = useRef({});
-
+  const apiUrl = process.env.REACT_APP_API_URL;
   useEffect(() => {
-    fetch('http://localhost:5000/auth/hist_insights')
-      .then(res => res.json())
+    fetch(`${apiUrl}/auth/hist_insights`)      .then(res => res.json())
       .then(json => setData(json))
       .catch(err => console.error('API Error:', err));
 

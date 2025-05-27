@@ -17,9 +17,9 @@ import { blue, grey } from "@mui/material/colors";
 export default function LandingPage() {
   const navigate = useNavigate();
   const [stats, setStats] = useState({ totalFiles: 0, totalRows: 0 });
-
+  const apiUrl = process.env.REACT_APP_API_URL;
   useEffect(() => {
-    fetch("http://localhost:5000/auth/all_insights")
+    fetch(`${apiUrl}/auth/all_insights`)
       .then(res => res.json())
       .then(data => {
         if (data.success) {

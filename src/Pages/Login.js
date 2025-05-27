@@ -26,6 +26,7 @@ const Login = () => {
   const [captcha, setCaptcha] = useState(generateCaptcha());
   const [userCaptcha, setUserCaptcha] = useState("");
   const [error, setError] = useState("");
+  const apiUrl = process.env.REACT_APP_API_URL;
   const navigate = useNavigate();
 
   const handleLogin = async () => {
@@ -37,7 +38,7 @@ const Login = () => {
     }
 
     try {
-      const response = await fetch("http://localhost:5000/auth/login", {
+      const response = await fetch(`${apiUrl}/auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -47,7 +48,6 @@ const Login = () => {
           password,
         }),
       });
-
       const data = await response.json();
 
       if (data.success) {

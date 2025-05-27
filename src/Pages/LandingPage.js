@@ -25,6 +25,7 @@ const LandingPage = () => {
     message: "",
     severity: "info",
   });
+  const apiUrl = process.env.REACT_APP_API_URL;
   const [showSummary, setShowSummary] = useState(false);
   const [insights, setInsights] = useState(null);
   const [showOptions, setShowOptions] = useState(false);
@@ -52,9 +53,8 @@ const LandingPage = () => {
     setIsProcessing(true);
     const formData = new FormData();
     formData.append("logfile", input.files[0]);
-
     try {
-      const response = await fetch("http://localhost:5000/auth/upload_log", {
+      const response = await fetch(`${apiUrl}/auth/upload_log`, {
         method: "POST",
         body: formData,
       });
@@ -124,7 +124,7 @@ const LandingPage = () => {
     setChatMessages((prev) => [...prev, { from: "user", text: chatInput }]);
 
     try {
-      const response = await fetch("http://localhost:5000/auth/ask", {
+      const response = await fetch(`${apiUrl}/auth/ask`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
