@@ -241,12 +241,12 @@ const LandingPage = () => {
           >
             <UploadFileIcon sx={{ fontSize: 50, mb: 2, color: "#90caf9" }} />
             <Typography variant="h6" gutterBottom sx={{ fontWeight: "medium" }}>
-              Upload your .log or .txt file
+              Please Upload your log File
             </Typography>
             <Input
               id="fileInput"
               type="file"
-              inputProps={{ accept: ".log,.txt" }}
+              inputProps={{ accept: ".log" }}
               onChange={handleFileChange}
               sx={{ display: "none" }}
             />

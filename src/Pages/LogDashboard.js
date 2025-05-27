@@ -51,7 +51,7 @@ const Dashboard = () => {
 
       return;
     }
-    fetch(`${apiUrl}/auth/hist_insights`)      .then(res => res.json())
+    fetch(`${apiUrl}/auth/all_insights`)      .then(res => res.json())
       .then(json => setData(json))
       .catch(err => console.error('API Error:', err));
 
