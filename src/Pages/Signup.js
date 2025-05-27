@@ -13,8 +13,10 @@ import {
 } from "@mui/material";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
+import { useNavigate } from "react-router-dom";
 
 const Signup = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -30,16 +32,15 @@ const Signup = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [message, setMessage] = useState("");
 
-  // New color scheme
+  // Simplified colors
   const colors = {
-    bgGradientStart: "#0f4c5c",
-    bgGradientEnd: "#38b2ac",
-    paperBg: "rgba(255, 255, 255, 0.12)",
-    text: "#e0f2f1",
-    border: "#4fd1c5",
-    buttonBg: "#38b2ac",
-    buttonHover: "#2c7a7b",
-    error: "#f56565",
+    bg: "#e8f0fe", // light ash-blue
+    paperBg: "#ffffff",
+    text: "#1a202c",
+    border: "#90a4ae", // ash
+    buttonBg: "#2196f3", // blue
+    buttonHover: "#1976d2",
+    error: "#f44336",
   };
 
   const validateForm = () => {
@@ -47,9 +48,12 @@ const Signup = () => {
     if (!formData.name.trim()) newErrors.name = "Username is required";
     if (!formData.email.match(/^\S+@\S+\.\S+$/)) newErrors.email = "Invalid email address";
     if (!formData.phone.match(/^\d{10}$/)) newErrors.phone = "Phone must be 10 digits";
-    if (!formData.age || formData.age < 12 || formData.age > 100) newErrors.age = "Age must be between 12 and 100";
-    if (formData.password.length < 6) newErrors.password = "Password must be at least 6 characters";
-    if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = "Passwords do not match";
+    if (!formData.age || formData.age < 12 || formData.age > 100)
+      newErrors.age = "Age must be between 12 and 100";
+    if (formData.password.length < 6)
+      newErrors.password = "Password must be at least 6 characters";
+    if (formData.password !== formData.confirmPassword)
+      newErrors.confirmPassword = "Passwords do not match";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -57,12 +61,7 @@ const Signup = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
-
-    if (value.length > 0) {
-      setShowEmoji({ ...showEmoji, [name]: true });
-    } else {
-      setShowEmoji({ ...showEmoji, [name]: false });
-    }
+    setShowEmoji({ ...showEmoji, [name]: value.length > 0 });
   };
 
   const handleSubmit = async (e) => {
@@ -79,15 +78,8 @@ const Signup = () => {
 
         const data = await res.json();
         if (data.success) {
-          setMessage("✅ Signup successful! You can now login.");
-          setFormData({
-            name: "",
-            email: "",
-            phone: "",
-            age: "",
-            password: "",
-            confirmPassword: "",
-          });
+          setMessage("✅ Signup successful!");
+          setTimeout(() => navigate("/login"), 1500); // navigate after 1.5 seconds
         } else {
           setMessage(`❌ ${data.message || "Signup failed"}`);
         }
@@ -99,44 +91,30 @@ const Signup = () => {
   };
 
   return (
-    <Box
-      sx={{
-        minHeight: "100vh",
-        background: `linear-gradient(to bottom right, ${colors.bgGradientStart}, ${colors.bgGradientEnd})`,
-        py: 10,
-      }}
-    >
+    <Box sx={{ minHeight: "100vh", background: colors.bg, py: 10 }}>
       <Container maxWidth="lg">
         <Grid container spacing={4} alignItems="center">
           <Grid item xs={12} md={6}>
             <Paper
-              elevation={10}
+              elevation={4}
               sx={{
                 p: 4,
                 width: "80%",
                 maxWidth: 400,
-                borderRadius: 4,
-                backdropFilter: "blur(12px)",
+                borderRadius: 3,
                 backgroundColor: colors.paperBg,
-                border: `1.5px solid ${colors.border}`,
+                border: `1px solid ${colors.border}`,
                 color: colors.text,
-                boxShadow: `0 8px 24px ${colors.border}66`,
               }}
             >
-              <Typography
-                variant="h5"
-                fontWeight={600}
-                mb={3}
-                align="center"
-                sx={{ color: colors.text }}
-              >
+              <Typography variant="h5" fontWeight={600} mb={3} align="center">
                 Sign Up
               </Typography>
 
               {message && (
                 <Alert
                   severity={message.includes("✅") ? "success" : "error"}
-                  sx={{ mb: 2, color: message.includes("✅") ? "green" : colors.error }}
+                  sx={{ mb: 2 }}
                 >
                   {message}
                 </Alert>
@@ -162,29 +140,16 @@ const Signup = () => {
                     error={!!errors[field]}
                     helperText={errors[field]}
                     InputProps={{
-                      endAdornment:
-                        showEmoji[field] && (
-                          <InputAdornment position="end">
-                            {{
-                              name: <span role="img" aria-label="emoji">😊</span>,
-                              email: <span role="img" aria-label="emoji">📧</span>,
-                              phone: <span role="img" aria-label="emoji">📱</span>,
-                              age: <span role="img" aria-label="emoji">🎂</span>,
-                            }[field]}
-                          </InputAdornment>
-                        ),
-                    }}
-                    sx={{
-                      input: { color: colors.text },
-                      label: { color: colors.text },
-                      "& .MuiOutlinedInput-root": {
-                        "& fieldset": { borderColor: colors.border },
-                        "&:hover fieldset": { borderColor: colors.text },
-                        "&.Mui-focused fieldset": { borderColor: colors.text },
-                      },
-                      "& .MuiFormHelperText-root": {
-                        color: colors.error,
-                      },
+                      endAdornment: showEmoji[field] && (
+                        <InputAdornment position="end">
+                          {{
+                            name: <span role="img">😊</span>,
+                            email: <span role="img">📧</span>,
+                            phone: <span role="img">📱</span>,
+                            age: <span role="img">🎂</span>,
+                          }[field]}
+                        </InputAdornment>
+                      ),
                     }}
                   />
                 ))}
@@ -202,28 +167,15 @@ const Signup = () => {
                   InputProps={{
                     endAdornment: (
                       <InputAdornment position="end">
-                        {showEmoji.password && <span role="img" aria-label="emoji">🔒</span>}
+                        {showEmoji.password && <span role="img">🔒</span>}
                         <IconButton
                           onClick={() => setShowPassword(!showPassword)}
                           edge="end"
-                          sx={{ color: colors.text }}
                         >
                           {showPassword ? <VisibilityOff /> : <Visibility />}
                         </IconButton>
                       </InputAdornment>
                     ),
-                  }}
-                  sx={{
-                    input: { color: colors.text },
-                    label: { color: colors.text },
-                    "& .MuiOutlinedInput-root": {
-                      "& fieldset": { borderColor: colors.border },
-                      "&:hover fieldset": { borderColor: colors.text },
-                      "&.Mui-focused fieldset": { borderColor: colors.text },
-                    },
-                    "& .MuiFormHelperText-root": {
-                      color: colors.error,
-                    },
                   }}
                 />
 
@@ -241,26 +193,15 @@ const Signup = () => {
                     endAdornment: (
                       <InputAdornment position="end">
                         <IconButton
-                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                          onClick={() =>
+                            setShowConfirmPassword(!showConfirmPassword)
+                          }
                           edge="end"
-                          sx={{ color: colors.text }}
                         >
                           {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
                         </IconButton>
                       </InputAdornment>
                     ),
-                  }}
-                  sx={{
-                    input: { color: colors.text },
-                    label: { color: colors.text },
-                    "& .MuiOutlinedInput-root": {
-                      "& fieldset": { borderColor: colors.border },
-                      "&:hover fieldset": { borderColor: colors.text },
-                      "&.Mui-focused fieldset": { borderColor: colors.text },
-                    },
-                    "& .MuiFormHelperText-root": {
-                      color: colors.error,
-                    },
                   }}
                 />
 
@@ -284,12 +225,11 @@ const Signup = () => {
           </Grid>
 
           <Grid item xs={12} md={6}>
-            <Typography variant="h3" sx={{ color: "#e0f2f1", fontWeight: 700 }}>
-              🏋️‍♀️ Join the Fitness Revolution
+            <Typography variant="h3" sx={{ color: colors.text, fontWeight: 700 }}>
+              🏋️‍♂️ Ready to Transform?
             </Typography>
-            <Typography variant="h6" sx={{ color: "#e0f2f1", mt: 2 }}>
-              Real-time tracking, AI fitness plans, social challenges, and more.
-              Sign up now and take charge of your health journey.
+            <Typography variant="h6" sx={{ color: colors.text, mt: 2 }}>
+              Simple signup. Smarter fitness. Join now and start your journey!
             </Typography>
           </Grid>
         </Grid>

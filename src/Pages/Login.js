@@ -12,9 +12,9 @@ import { useNavigate } from "react-router-dom";
 
 // Generate CAPTCHA function
 const generateCaptcha = () => {
-  const chars = "1";
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
   let captcha = "";
-  for (let i = 0; i < 1; i++) {
+  for (let i = 0; i < 6; i++) {
     captcha += chars.charAt(Math.floor(Math.random() * chars.length));
   }
   return captcha;
@@ -68,19 +68,17 @@ const Login = () => {
     }
   };
 
-  // Define green color palette variables
-  const greenDark = "#1f4037";
-  const greenLight = "#99f2c8";
-  const greenMedium = "#4caf50";
-  const greenHover = "#388e3c";
-  const inputBorderColor = "#4caf5080";
+  // Simple color theme
+  const blue = "#1976d2";
+  const ash = "#f5f5f5";
+  const inputBorderColor = "#cfd8dc";
 
   return (
     <Grid
       container
       sx={{
         minHeight: "100vh",
-        background: `linear-gradient(135deg, ${greenDark}, ${greenLight})`,
+        backgroundColor: ash,
         fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
       }}
     >
@@ -96,9 +94,8 @@ const Login = () => {
           alignItems: "center",
           px: 4,
           py: 6,
-          color: greenLight,
-          background: "rgba(0, 0, 0, 0.3)",
-          textShadow: `0 0 10px ${greenDark}`,
+          backgroundColor: blue,
+          color: "white",
         }}
       >
         <Typography variant="h3" fontWeight="bold" mb={2} textAlign="center">
@@ -108,8 +105,7 @@ const Login = () => {
           variant="body1"
           sx={{ maxWidth: 400, textAlign: "center", opacity: 0.85 }}
         >
-          Log in to your account and start analyzing your logs with powerful
-          filters and real-time insights.
+          Log in to your account and explore data with real-time insights.
         </Typography>
       </Grid>
 
@@ -124,19 +120,18 @@ const Login = () => {
           alignItems: "center",
           px: 4,
           py: 6,
-          backgroundColor: "rgba(255, 255, 255, 0.95)",
+          backgroundColor: ash,
         }}
       >
         <Paper
-          elevation={12}
+          elevation={6}
           sx={{
             p: 5,
             width: "100%",
             maxWidth: 420,
             borderRadius: 3,
-            boxShadow:
-              `0 6px 20px ${greenMedium}aa, 0 8px 30px ${greenDark}bb`,
-            border: `1px solid ${greenMedium}`,
+            backgroundColor: "white",
+            border: `1px solid ${inputBorderColor}`,
           }}
         >
           <Typography
@@ -144,7 +139,7 @@ const Login = () => {
             fontWeight={600}
             mb={4}
             align="center"
-            color={greenDark}
+            color={blue}
           >
             User Login
           </Typography>
@@ -157,20 +152,6 @@ const Login = () => {
             value={name}
             onChange={(e) => setEmail(e.target.value)}
             autoComplete="email"
-            sx={{
-              "& .MuiOutlinedInput-root": {
-                "& fieldset": {
-                  borderColor: inputBorderColor,
-                },
-                "&:hover fieldset": {
-                  borderColor: greenMedium,
-                },
-                "&.Mui-focused fieldset": {
-                  borderColor: greenMedium,
-                  boxShadow: `0 0 8px ${greenMedium}aa`,
-                },
-              },
-            }}
           />
 
           <TextField
@@ -182,20 +163,6 @@ const Login = () => {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             autoComplete="current-password"
-            sx={{
-              "& .MuiOutlinedInput-root": {
-                "& fieldset": {
-                  borderColor: inputBorderColor,
-                },
-                "&:hover fieldset": {
-                  borderColor: greenMedium,
-                },
-                "&.Mui-focused fieldset": {
-                  borderColor: greenMedium,
-                  boxShadow: `0 0 8px ${greenMedium}aa`,
-                },
-              },
-            }}
           />
 
           <Box
@@ -203,17 +170,16 @@ const Login = () => {
               my: 3,
               py: 1.5,
               textAlign: "center",
-              fontSize: 26,
-              fontWeight: 700,
-              backgroundColor: greenLight,
+              fontSize: 24,
+              fontWeight: 600,
+              backgroundColor: ash,
               borderRadius: 2,
               userSelect: "none",
-              color: greenDark,
-              border: `2px solid ${greenMedium}`,
+              color: blue,
+              border: `2px solid ${blue}`,
               fontFamily: "'Courier New', Courier, monospace",
-              letterSpacing: 8,
+              letterSpacing: 6,
               cursor: "default",
-              boxShadow: `0 0 8px ${greenMedium}55`,
             }}
           >
             {captcha}
@@ -226,20 +192,6 @@ const Login = () => {
             value={userCaptcha}
             onChange={(e) => setUserCaptcha(e.target.value)}
             inputProps={{ style: { letterSpacing: "0.2em" } }}
-            sx={{
-              "& .MuiOutlinedInput-root": {
-                "& fieldset": {
-                  borderColor: inputBorderColor,
-                },
-                "&:hover fieldset": {
-                  borderColor: greenMedium,
-                },
-                "&.Mui-focused fieldset": {
-                  borderColor: greenMedium,
-                  boxShadow: `0 0 8px ${greenMedium}aa`,
-                },
-              },
-            }}
           />
 
           {error && (
@@ -254,14 +206,11 @@ const Login = () => {
             sx={{
               mt: 4,
               py: 1.8,
-              borderRadius: 3,
-              background: `linear-gradient(45deg, ${greenDark}, ${greenMedium})`,
+              borderRadius: 2,
+              backgroundColor: blue,
               fontWeight: "bold",
-              boxShadow: `0 4px 15px ${greenMedium}88`,
-              transition: "background 0.3s ease",
               "&:hover": {
-                background: `linear-gradient(45deg, ${greenMedium}, ${greenHover})`,
-                boxShadow: `0 6px 20px ${greenHover}cc`,
+                backgroundColor: "#115293",
               },
             }}
             onClick={handleLogin}
@@ -274,12 +223,12 @@ const Login = () => {
             display="flex"
             justifyContent="space-between"
             fontSize="0.9rem"
-            color={greenMedium}
+            color={blue}
           >
-            <Link href="#" underline="hover" sx={{ color: greenMedium }}>
+            <Link href="#" underline="hover" sx={{ color: blue }}>
               Forgot Password?
             </Link>
-            <Link href="/signup" underline="hover" sx={{ color: greenMedium }}>
+            <Link href="/signup" underline="hover" sx={{ color: blue }}>
               Signup
             </Link>
           </Box>
