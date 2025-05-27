@@ -112,7 +112,7 @@ const LandingPage = () => {
   };
 
   const handleLogout = () => {
-    navigate("/login");
+    navigate("/logout");
   };
 
   const handleSnackbarClose = () => {
@@ -323,9 +323,9 @@ const LandingPage = () => {
                       setShowSummary(true);
                       setShowChat(false); // Hide Chat when Summary is clicked
                     } else if (label === "Insights") {
-                      navigate("/x");
+                      window.open("/log_insights", "_blank");
                     } else {
-                      navigate("/history_insights");
+                      window.open("/history_insights", "_blank");
                     }
                   }}
                   sx={{
