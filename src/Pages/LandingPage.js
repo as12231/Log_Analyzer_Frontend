@@ -206,7 +206,7 @@ const LandingPage = () => {
               letterSpacing: 1,
             }}
           >
-            📊 Log Analytics Platform
+            📊 Log Analyzer Platform
           </Typography>
           <Typography
             variant="h6"

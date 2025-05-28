@@ -309,7 +309,7 @@ const Dashboard = () => {
           textShadow: '2px 2px 4px rgba(0,0,0,0.3)',
         }}
       >
-        History Log Analytics Insights
+        Log Analytics Insights
       </Typography>
 
       <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, mb: 4, flexWrap: 'wrap' }}>

@@ -37,7 +37,7 @@ export default function LandingPage() {
 
   const animateCount = (targetFiles, targetRows) => {
     let start = 0;
-    const duration = 2000;
+    const duration = 800;
     const stepTime = 20;
     const steps = duration / stepTime;
     const incrementFiles = targetFiles / steps;
@@ -63,7 +63,7 @@ export default function LandingPage() {
       <AppBar position="static" sx={{ backgroundColor: grey[950] }}>
         <Toolbar>
           <Typography variant="h6" sx={{ flexGrow: 1 }}>
-            Log Analytics
+            Log Analyzer
           </Typography>
           <Stack direction="row" spacing={2}>
             <Button color="inherit" onClick={() => navigate('/login')}>Login</Button>
